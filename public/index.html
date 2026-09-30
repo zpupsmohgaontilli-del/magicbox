@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MagicBox</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                    body { font-family: sans-serif; text-align: center; padding: 20px; background: #121212; color: #fff; }
+                            button { padding: 15px 30px; margin: 10px; font-size: 16px; background: #6200ea; color: white; border: none; border-radius: 8px; }
+                                    #output { margin-top: 30px; padding: 20px; background: #1e1e1e; border-radius: 8px; text-align: left; font-family: monospace; }
+                                        </style>
+                                        </head>
+                                        <body>
+                                            <h1>🪄 MagicBox</h1>
+                                                <div id="button-container"></div>
+                                                    <pre id="output">Waiting for you to press a button...</pre>
+
+                                                        <script>
+                                                                async function loadButtons() {
+                                                                            const res = await fetch('/api/simulations');
+                                                                                        const sims = await res.json();
+                                                                                                    const container = document.getElementById('button-container');
+                                                                                                                
+                                                                                                                            sims.forEach(sim => {
+                                                                                                                                            const btn = document.createElement('button');
+                                                                                                                                                            btn.innerText = `Run ${sim}`;
+                                                                                                                                                                            btn.onclick = () => runSimulation(sim);
+                                                                                                                                                                                            container.appendChild(btn);
+                                                                                                                                                                                                        });
+                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                        async function runSimulation(name) {
+                                                                                                                                                                                                                                    document.getElementById('output').innerText = "Calculating...";
+                                                                                                                                                                                                                                                const res = await fetch(`/api/run/${name}`, { method: 'POST' });
+                                                                                                                                                                                                                                                            const data = await res.json();
+                                                                                                                                                                                                                                                                        document.getElementById('output').innerText = JSON.stringify(data.result, null, 2);
+                                                                                                                                                                                                                                                                                }
+
+                                                                                                                                                                                                                                                                                        loadButtons();
+                                                                                                                                                                                                                                                                                            </script>
+                                                                                                                                                                                                                                                                                            </body>
+                                                                                                                                                                                                                                                                                            </html>
+                                                                                                                                                                                                                                                                                            
