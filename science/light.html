@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>प्रकाशाचे परावर्तन (Reflection of Light) — MagicBox</title>
 
-  <!-- Clean Devanagari & Modern Sans Font -->
+  <!-- Google Fonts: Devanagari & Modern UI Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <style>
     :root {
-      --bg: #090a0f;
-      --panel-bg: rgba(18, 22, 34, 0.85);
+      --bg: #000000;
+      --panel-bg: rgba(15, 23, 42, 0.88);
       --border: rgba(255, 255, 255, 0.12);
-      --text: #f1f5f9;
+      --text: #f8fafc;
       --muted: #94a3b8;
-      --laser-color: #00ff66;
+      --accent: #38bdf8;
     }
 
     * {
@@ -26,305 +26,336 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
-    body {
-      font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+    /* Fixed Viewport: Exactly 100vh / 100dvh to prevent any scrolling */
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
     }
 
-    /* Top Navigation */
+    /* Compact Top Header */
     header {
-      padding: 0.85rem 1.25rem;
+      height: 48px;
+      min-height: 48px;
+      padding: 0 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 17, 26, 0.8);
-      backdrop-filter: blur(10px);
+      background: rgba(15, 23, 42, 0.95);
       border-bottom: 1px solid var(--border);
-      z-index: 10;
+      z-index: 20;
     }
 
     .btn-back {
       text-decoration: none;
-      color: #60a5fa;
-      font-size: 0.95rem;
+      color: var(--accent);
+      font-size: 0.88rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.45rem 0.9rem;
-      border-radius: 9999px;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
       border: 1px solid var(--border);
       transition: all 0.2s ease;
     }
     .btn-back:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: translateX(-3px);
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateX(-2px);
     }
 
     .title-banner {
-      font-size: 1.1rem;
+      font-size: 0.92rem;
       font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    /* Simulation Layout */
-    .workbench {
-      flex: 1;
       display: flex;
-      flex-direction: column;
-      position: relative;
+      align-items: center;
+      gap: 0.45rem;
+      color: #e2e8f0;
     }
 
-    /* Interactive Canvas */
+    /* Interactive Canvas Stage */
+    .stage {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      min-height: 0; /* Critical for flex child shrink */
+      overflow: hidden;
+      touch-action: none; /* Prevents mobile browser scrolling while dragging */
+    }
+
     #opticsCanvas {
       width: 100%;
-      flex: 1;
-      min-height: 380px;
-      background: #000000;
+      height: 100%;
       display: block;
       cursor: crosshair;
     }
 
-    /* Controls Panel */
-    .controls-panel {
+    /* Live Heads-Up Display (HUD) */
+    .hud-badge {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.75rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+    .hud-badge b { color: var(--accent); }
+
+    /* Compact Bottom Control Station */
+    .dock {
       background: var(--panel-bg);
       border-top: 1px solid var(--border);
       backdrop-filter: blur(12px);
-      padding: 1rem 1.25rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.2rem;
-      z-index: 5;
-    }
-
-    .control-group {
+      padding: 0.5rem 1rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-around;
+      gap: 0.75rem 1.25rem;
+      z-index: 20;
     }
 
-    .control-label {
-      font-size: 0.85rem;
+    .dock-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .dock-label {
+      font-size: 0.78rem;
       font-weight: 600;
       color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      white-space: nowrap;
     }
 
-    /* Toggle Buttons for Surfaces */
+    /* Surface Switch Buttons */
     .surface-toggles {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.35rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 3px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
     }
 
     .btn-toggle {
-      flex: 1;
-      padding: 0.6rem 0.75rem;
-      font-size: 0.85rem;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.78rem;
       font-family: inherit;
       font-weight: 600;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
       transition: all 0.2s ease;
     }
 
     .btn-toggle.active {
       background: #2563eb;
-      border-color: #3b82f6;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
+    }
+
+    /* Laser Count Slider */
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    input[type="range"] {
+      width: 85px;
+      accent-color: #38bdf8;
+      cursor: pointer;
+      height: 5px;
+      border-radius: 3px;
+    }
+
+    .count-indicator {
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 14px;
+      font-size: 0.88rem;
+      text-align: center;
     }
 
     /* Color Swatches */
     .color-swatches {
       display: flex;
-      gap: 0.6rem;
+      gap: 0.45rem;
       align-items: center;
     }
 
     .color-dot {
-      width: 28px;
-      height: 28px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.15s ease;
     }
 
-    .color-dot:hover {
-      transform: scale(1.15);
-    }
-
+    .color-dot:hover { transform: scale(1.15); }
     .color-dot.active {
       border-color: #ffffff;
-      transform: scale(1.18);
+      transform: scale(1.22);
     }
 
-    /* Slider Range */
-    input[type="range"] {
-      width: 100%;
-      accent-color: #3b82f6;
-      cursor: pointer;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-    }
-
-    /* Angle & State Readout Overlay */
-    .hud-badge {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      background: rgba(0, 0, 0, 0.75);
-      border: 1px solid var(--border);
-      padding: 0.6rem 0.9rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      line-height: 1.4;
-      pointer-events: none;
-      backdrop-filter: blur(8px);
-    }
-
-    .hud-badge span {
-      color: #60a5fa;
-      font-weight: 700;
-    }
-
-    @media (max-width: 600px) {
-      .controls-panel {
-        grid-template-columns: 1fr;
-        gap: 0.9rem;
-        padding: 0.85rem 1rem;
+    /* Small screen optimizations */
+    @media (max-width: 650px) {
+      header { height: 42px; min-height: 42px; padding: 0 0.75rem; }
+      .title-banner { font-size: 0.82rem; }
+      .dock {
+        padding: 0.45rem 0.65rem;
+        justify-content: space-between;
+        gap: 0.4rem;
       }
-      .title-banner {
-        font-size: 0.95rem;
-      }
+      .dock-label { display: none; } /* Hide labels on tight mobile screens to save space */
+      input[type="range"] { width: 70px; }
+      .hud-badge { font-size: 0.72rem; padding: 0.35rem 0.55rem; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <header>
     <a href="../index.html" class="btn-back">
       <i class="fa-solid fa-arrow-left"></i> MagicBox
     </a>
     <div class="title-banner">
-      <i class="fa-solid fa-lightbulb" style="color: #facc15; margin-right: 6px;"></i>
-      प्रकाशाचे परावर्तन प्रयोगशाळा (Light Optics Lab)
+      <i class="fa-solid fa-lightbulb" style="color: #facc15;"></i>
+      <span>प्रकाशाचे परावर्तन (Optics Lab)</span>
     </div>
   </header>
 
-  <div class="workbench">
+  <!-- Canvas Stage (Zero overflow, zero scroll) -->
+  <div class="stage" id="stageContainer">
     <div class="hud-badge">
-      पृष्ठभाग: <span id="surfaceModeText">गुळगुळीत आरसा (Smooth Mirror)</span><br>
-      आपाती कोन ($i$): <span id="incidentAngleText">४५°</span>
+      पृष्ठभाग: <b id="hudSurface">गुळगुळीत (Smooth)</b><br>
+      आपाती कोन ($i$): <b id="hudAngle">४५°</b>
     </div>
-
     <canvas id="opticsCanvas"></canvas>
-
-    <!-- Control Station -->
-    <div class="controls-panel">
-      <!-- Surface Type Selection -->
-      <div class="control-group">
-        <label class="control-label">पृष्ठभागाचा प्रकार (Surface Type)</label>
-        <div class="surface-toggles">
-          <button class="btn-toggle active" id="btnSmooth" onclick="setSurface('smooth')">
-            <i class="fa-solid fa-grip-lines"></i> गुळगुळीत (Smooth)
-          </button>
-          <button class="btn-toggle" id="btnRough" onclick="setSurface('rough')">
-            <i class="fa-solid fa-mountain"></i> खडबडीत (Rough)
-          </button>
-        </div>
-      </div>
-
-      <!-- Laser Count -->
-      <div class="control-group">
-        <label class="control-label">
-          <span>लेसर किरणांची संख्या (Lasers)</span>
-          <span id="laserCountVal" style="color:#60a5fa; font-weight:700;">3</span>
-        </label>
-        <input type="range" id="laserCountSlider" min="1" max="5" value="3" step="1" oninput="updateLaserCount(this.value)">
-      </div>
-
-      <!-- Laser Beam Color -->
-      <div class="control-group">
-        <label class="control-label">किरणांचा रंग (Neon Beam Color)</label>
-        <div class="color-swatches">
-          <div class="color-dot active" style="background: #00ff66; box-shadow: 0 0 10px #00ff66;" onclick="setColor('#00ff66', this)"></div>
-          <div class="color-dot" style="background: #ff0055; box-shadow: 0 0 10px #ff0055;" onclick="setColor('#ff0055', this)"></div>
-          <div class="color-dot" style="background: #00e5ff; box-shadow: 0 0 10px #00e5ff;" onclick="setColor('#00e5ff', this)"></div>
-          <div class="color-dot" style="background: #ffe600; box-shadow: 0 0 10px #ffe600;" onclick="setColor('#ffe600', this)"></div>
-          <div class="color-dot" style="background: #b537f2; box-shadow: 0 0 10px #b537f2;" onclick="setColor('#b537f2', this)"></div>
-        </div>
-      </div>
-    </div>
   </div>
 
+  <!-- Bottom Control Dock -->
+  <footer class="dock">
+    <!-- Surface Toggle -->
+    <div class="dock-group">
+      <span class="dock-label">पृष्ठभाग:</span>
+      <div class="surface-toggles">
+        <button class="btn-toggle active" id="btnSmooth" onclick="setSurface('smooth')">
+          <i class="fa-solid fa-grip-lines"></i> गुळगुळीत
+        </button>
+        <button class="btn-toggle" id="btnRough" onclick="setSurface('rough')">
+          <i class="fa-solid fa-mountain"></i> खडबडीत
+        </button>
+      </div>
+    </div>
+
+    <!-- Beam Count -->
+    <div class="dock-group">
+      <span class="dock-label">किरण:</span>
+      <div class="slider-wrap">
+        <input type="range" id="laserSlider" min="1" max="5" value="3" step="1" oninput="setLaserCount(this.value)">
+        <span class="count-indicator" id="hudCount">३</span>
+      </div>
+    </div>
+
+    <!-- Beam Color Swatches -->
+    <div class="dock-group">
+      <span class="dock-label">रंग:</span>
+      <div class="color-swatches">
+        <div class="color-dot active" style="background: #00ff66; box-shadow: 0 0 8px #00ff66;" onclick="setColor('#00ff66', this)"></div>
+        <div class="color-dot" style="background: #ff0055; box-shadow: 0 0 8px #ff0055;" onclick="setColor('#ff0055', this)"></div>
+        <div class="color-dot" style="background: #00e5ff; box-shadow: 0 0 8px #00e5ff;" onclick="setColor('#00e5ff', this)"></div>
+        <div class="color-dot" style="background: #ffe600; box-shadow: 0 0 8px #ffe600;" onclick="setColor('#ffe600', this)"></div>
+        <div class="color-dot" style="background: #c084fc; box-shadow: 0 0 8px #c084fc;" onclick="setColor('#c084fc', this)"></div>
+      </div>
+    </div>
+  </footer>
+
   <script>
+    const stage = document.getElementById('stageContainer');
     const canvas = document.getElementById('opticsCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Marathi Digits Mapper
     const marathiDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
-    function toMarathiNumber(num) {
-      return num.toString().split('').map(c => marathiDigits[parseInt(c)] || c).join('');
+    function toMarathi(n) {
+      return n.toString().split('').map(c => marathiDigits[parseInt(c)] || c).join('');
     }
 
     // App State
-    let surfaceType = 'smooth'; // 'smooth' or 'rough'
+    let surfaceType = 'smooth';
     let beamColor = '#00ff66';
     let laserCount = 3;
     let isDragging = false;
+    let sourcePos = { x: 0, y: 0 };
+    let roughFacets = [];
 
-    // Laser Source Origin (draggable in canvas space)
-    let sourcePos = { x: 120, y: 120 };
+    // Precise Canvas Resizing without triggering scroll
+    function resize() {
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
 
-    // Rough Surface Micro-facets
-    let roughSurfacePoints = [];
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
 
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      generateRoughSurface();
+      // Default torch position (centered horizontally, upper third)
+      if (sourcePos.x === 0 && sourcePos.y === 0) {
+        sourcePos.x = w * 0.25;
+        sourcePos.y = h * 0.22;
+      } else {
+        // Keep torch in bounds on screen orientation change
+        sourcePos.x = Math.min(sourcePos.x, w - 40);
+        sourcePos.y = Math.min(sourcePos.y, h * 0.55);
+      }
+
+      generateRoughFacets(w);
       draw();
     }
 
-    window.addEventListener('resize', resizeCanvas);
-
-    function generateRoughSurface() {
-      roughSurfacePoints = [];
-      const w = canvas.getBoundingClientRect().width;
+    function generateRoughFacets(w) {
+      roughFacets = [];
       const step = 8;
-      for (let x = 0; x <= w; x += step) {
-        // Fixed seed-like procedural jagged surface
-        const offset = Math.sin(x * 0.12) * 4 + Math.cos(x * 0.35) * 6 + ((x % 17) - 8) * 0.6;
-        roughSurfacePoints.push({ x: x, y: offset });
+      for (let x = 0; x <= w + step; x += step) {
+        const offset = Math.sin(x * 0.14) * 4 + Math.cos(x * 0.38) * 6 + ((x % 13) - 6) * 0.7;
+        roughFacets.push({ x: x, y: offset });
       }
     }
 
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+
+    // Controls
     function setSurface(type) {
       surfaceType = type;
       document.getElementById('btnSmooth').classList.toggle('active', type === 'smooth');
       document.getElementById('btnRough').classList.toggle('active', type === 'rough');
-      document.getElementById('surfaceModeText').innerText = 
-        type === 'smooth' ? 'गुळगुळीत आरसा (नियमित परावर्तन)' : 'खडबडीत पृष्ठभाग (अनियमित / विखुरलेले परावर्तन)';
+      document.getElementById('hudSurface').innerText = (type === 'smooth') ? 'गुळगुळीत (नियमित)' : 'खडबडीत (विखुरलेले)';
       draw();
     }
 
@@ -335,14 +366,14 @@
       draw();
     }
 
-    function updateLaserCount(val) {
+    function setLaserCount(val) {
       laserCount = parseInt(val);
-      document.getElementById('laserCountVal').innerText = toMarathiNumber(laserCount);
+      document.getElementById('hudCount').innerText = toMarathi(laserCount);
       draw();
     }
 
-    // Mouse / Touch Interaction for moving the laser torch
-    function getEventPos(e) {
+    // Touch & Pointer Dragging
+    function getPointerPos(e) {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -352,60 +383,59 @@
       };
     }
 
-    function handleStart(e) {
-      const p = getEventPos(e);
-      // Can drag from anywhere above the mirror
-      const mirrorY = canvas.getBoundingClientRect().height * 0.68;
-      if (p.y < mirrorY - 20) {
+    function onPointerDown(e) {
+      const p = getPointerPos(e);
+      const mirrorY = stage.clientHeight * 0.7;
+      if (p.y < mirrorY - 15) {
         isDragging = true;
-        sourcePos = p;
+        sourcePos.x = p.x;
+        sourcePos.y = p.y;
         draw();
       }
     }
 
-    function handleMove(e) {
+    function onPointerMove(e) {
       if (!isDragging) return;
-      const p = getEventPos(e);
-      const mirrorY = canvas.getBoundingClientRect().height * 0.68;
-      sourcePos.x = Math.max(30, Math.min(canvas.getBoundingClientRect().width - 30, p.x));
-      sourcePos.y = Math.max(30, Math.min(mirrorY - 40, p.y));
+      const p = getPointerPos(e);
+      const mirrorY = stage.clientHeight * 0.7;
+      sourcePos.x = Math.max(30, Math.min(stage.clientWidth - 30, p.x));
+      sourcePos.y = Math.max(25, Math.min(mirrorY - 35, p.y));
       draw();
     }
 
-    function handleEnd() { isDragging = false; }
+    function onPointerUp() { isDragging = false; }
 
-    canvas.addEventListener('mousedown', handleStart);
-    canvas.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
+    stage.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
 
-    canvas.addEventListener('touchstart', handleStart, { passive: true });
-    canvas.addEventListener('touchmove', handleMove, { passive: true });
-    window.addEventListener('touchend', handleEnd);
+    stage.addEventListener('touchstart', onPointerDown, { passive: false });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
 
-    // Neon Glow Line Drawing Helper
+    // Glowing Neon Line Drawing
     function drawNeonLine(x1, y1, x2, y2, color, width = 3) {
       ctx.save();
-      // Outermost wide glow
+      // Outer glow
       ctx.strokeStyle = color;
-      ctx.lineWidth = width + 7;
+      ctx.lineWidth = width + 6;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = 14;
       ctx.globalAlpha = 0.28;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
 
-      // Sharp inner beam
-      ctx.lineWidth = width + 2;
-      ctx.shadowBlur = 10;
-      ctx.globalAlpha = 0.8;
+      // Sharp Core
+      ctx.lineWidth = width;
+      ctx.globalAlpha = 0.85;
       ctx.stroke();
 
-      // Super-bright white core
+      // White Center Filament
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = Math.max(1.5, width * 0.55);
-      ctx.shadowBlur = 4;
+      ctx.lineWidth = Math.max(1.2, width * 0.45);
+      ctx.shadowBlur = 3;
       ctx.globalAlpha = 0.95;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
@@ -414,28 +444,26 @@
       ctx.restore();
     }
 
+    // Main Render Loop
     function draw() {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const mirrorY = h * 0.68;
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const mirrorY = h * 0.7;
 
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Draw Mirror / Reflective Surface
+      // 1. Draw Surface (Mirror or Rough Board)
       if (surfaceType === 'smooth') {
-        // Smooth silver mirror
         const grad = ctx.createLinearGradient(0, mirrorY, 0, h);
-        grad.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
-        grad.addColorStop(0.08, 'rgba(15, 23, 42, 0.95)');
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+        grad.addColorStop(0.12, 'rgba(15, 23, 42, 0.95)');
         grad.addColorStop(1, '#020617');
 
         ctx.fillStyle = grad;
         ctx.fillRect(0, mirrorY, w, h - mirrorY);
 
-        // Mirror surface reflective boundary
         ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.shadowColor = '#0284c7';
         ctx.shadowBlur = 8;
         ctx.beginPath();
@@ -444,51 +472,49 @@
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else {
-        // Rough irregular boundary
         ctx.save();
         ctx.fillStyle = '#1e293b';
         ctx.beginPath();
-        ctx.moveTo(0, mirrorY + (roughSurfacePoints[0]?.y || 0));
-        for (let i = 1; i < roughSurfacePoints.length; i++) {
-          ctx.lineTo(roughSurfacePoints[i].x, mirrorY + roughSurfacePoints[i].y);
+        ctx.moveTo(0, mirrorY + (roughFacets[0]?.y || 0));
+        for (let i = 1; i < roughFacets.length; i++) {
+          ctx.lineTo(roughFacets[i].x, mirrorY + roughFacets[i].y);
         }
         ctx.lineTo(w, h);
         ctx.lineTo(0, h);
         ctx.closePath();
         ctx.fill();
 
-        // Jagged boundary line
         ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(0, mirrorY + (roughSurfacePoints[0]?.y || 0));
-        for (let i = 1; i < roughSurfacePoints.length; i++) {
-          ctx.lineTo(roughSurfacePoints[i].x, mirrorY + roughSurfacePoints[i].y);
+        ctx.moveTo(0, mirrorY + (roughFacets[0]?.y || 0));
+        for (let i = 1; i < roughFacets.length; i++) {
+          ctx.lineTo(roughFacets[i].x, mirrorY + roughFacets[i].y);
         }
         ctx.stroke();
         ctx.restore();
       }
 
-      // 2. Normal (स्तंभिका) for center reference
+      // 2. Normal (स्तंभिका)
       const targetCenterX = w * 0.52;
       ctx.save();
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash([4, 4]);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(targetCenterX, mirrorY - 140);
+      ctx.moveTo(targetCenterX, mirrorY - (h * 0.4));
       ctx.lineTo(targetCenterX, mirrorY);
       ctx.stroke();
       ctx.restore();
 
-      // 3. Compute Angle for Angle HUD
-      const dxNorm = targetCenterX - sourcePos.x;
-      const dyNorm = mirrorY - sourcePos.y;
-      let incidentAngleDeg = Math.round(Math.abs(Math.atan2(dxNorm, dyNorm) * (180 / Math.PI)));
-      document.getElementById('incidentAngleText').innerText = `${toMarathiNumber(incidentAngleDeg)}°`;
+      // 3. Angle Calculation
+      const dx = targetCenterX - sourcePos.x;
+      const dy = mirrorY - sourcePos.y;
+      const angleDeg = Math.round(Math.abs(Math.atan2(dx, dy) * (180 / Math.PI)));
+      document.getElementById('hudAngle').innerText = `${toMarathi(angleDeg)}°`;
 
-      // 4. Generate Up to 5 Laser Beams
-      const beamSpacing = 24;
+      // 4. Draw Neon Lasers
+      const beamSpacing = Math.min(22, w * 0.04);
       const startOffset = -((laserCount - 1) / 2) * beamSpacing;
 
       for (let i = 0; i < laserCount; i++) {
@@ -498,76 +524,68 @@
         const hitX = targetCenterX + offset;
         const hitY = mirrorY;
 
-        // Incident Ray (आपाती किरण)
+        // Incident Ray
         drawNeonLine(startX, startY, hitX, hitY, beamColor, 2.5);
 
-        // Reflection Point Flash (स्पर्श बिंदू)
+        // Flash dot
         ctx.save();
         ctx.fillStyle = '#ffffff';
         ctx.shadowColor = beamColor;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 12;
         ctx.beginPath();
-        ctx.arc(hitX, hitY, 3.5, 0, Math.PI * 2);
+        ctx.arc(hitX, hitY, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Reflected Ray (परावर्तित किरण)
+        // Reflected Ray
         if (surfaceType === 'smooth') {
-          // Regular Reflection: Angle of incidence = Angle of reflection
           const rayDx = hitX - startX;
           const rayDy = hitY - startY;
-          const reflEndX = hitX + rayDx;
-          const reflEndY = hitY - rayDy;
-          drawNeonLine(hitX, hitY, reflEndX, reflEndY, beamColor, 2.5);
+          drawNeonLine(hitX, hitY, hitX + rayDx, hitY - rayDy, beamColor, 2.5);
         } else {
-          // Diffused Reflection: Every beam scatters at erratic pseudorandom angles
-          const scatterAngles = [-65, 35, -20, 50, -45];
-          const chosenAngle = (scatterAngles[i % scatterAngles.length] * Math.PI) / 180;
-          const rayLength = 260;
-          const reflEndX = hitX + Math.sin(chosenAngle) * rayLength;
-          const reflEndY = hitY - Math.cos(chosenAngle) * rayLength;
-          drawNeonLine(hitX, hitY, reflEndX, reflEndY, beamColor, 2.2);
+          // Diffused scattered angles
+          const angles = [-62, 38, -22, 54, -48];
+          const theta = (angles[i % angles.length] * Math.PI) / 180;
+          const rayLen = Math.min(260, h * 0.5);
+          drawNeonLine(hitX, hitY, hitX + Math.sin(theta) * rayLen, hitY - Math.cos(theta) * rayLen, beamColor, 2.2);
         }
       }
 
-      // 5. Draw Laser Torch Housing (Source)
+      // 5. Draw Laser Torch Body
       ctx.save();
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#0f172a';
       ctx.strokeStyle = beamColor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.8;
       ctx.shadowColor = beamColor;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 10;
 
-      const torchWidth = Math.max(50, (laserCount * beamSpacing) + 16);
+      const torchW = Math.max(48, (laserCount * beamSpacing) + 14);
       ctx.beginPath();
-      ctx.roundRect(sourcePos.x - torchWidth / 2, sourcePos.y - 20, torchWidth, 24, 6);
+      ctx.roundRect(sourcePos.x - torchW / 2, sourcePos.y - 18, torchW, 20, 5);
       ctx.fill();
       ctx.stroke();
 
-      // Torch Lens Emitters
+      // Emitter dots
       for (let i = 0; i < laserCount; i++) {
         const offset = startOffset + (i * beamSpacing);
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(sourcePos.x + offset, sourcePos.y + 4, 3, 0, Math.PI * 2);
+        ctx.arc(sourcePos.x + offset, sourcePos.y + 2, 2.5, 0, Math.PI * 2);
         ctx.fill();
       }
-
       ctx.restore();
 
-      // Guide label for teachers/students
+      // Instructional touch hint
       ctx.save();
-      ctx.font = '12px Poppins, Noto Sans Devanagari';
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.font = '11px Poppins, Noto Sans Devanagari';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
       ctx.textAlign = 'center';
-      ctx.fillText('लेसर हलवण्यासाठी वर कुठेही स्पर्श करा / ड्रॅग करा (Drag Laser)', sourcePos.x, sourcePos.y - 28);
+      ctx.fillText('लेसर हलवण्यासाठी वर कुठेही स्पर्श करा (Drag Laser)', sourcePos.x, sourcePos.y - 24);
       ctx.restore();
     }
 
-    // Initial setup on load
-    window.onload = () => {
-      resizeCanvas();
-    };
+    // Launch immediately on load
+    window.addEventListener('DOMContentLoaded', resize);
   </script>
 </body>
 </html>
