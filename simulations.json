@@ -2,16 +2,16 @@
   {
     "id": "fractions-strips",
     "category": "maths",
-    "title": "Fraction Strips",
-    "desc": "Visualize fractions, parts of a whole, and equivalents.",
+    "title": "अपूर्णांक पट्टी (Fraction Strips)",
+    "desc": "अंश, छेद आणि सममूल्य अपूर्णांक समजून घेण्यासाठी परस्परसंवादी साधन.",
     "icon": "fa-solid fa-chart-pie",
     "url": "maths/fractions.html"
   },
   {
     "id": "light-reflection",
     "category": "science",
-    "title": "Light Reflection Lab",
-    "desc": "Explore incident and reflected rays with an interactive mirror.",
+    "title": "प्रकाशाचे परावर्तन (Reflection of Light)",
+    "desc": "सपाट आरसा, आपाती किरण आणि परावर्तित कोन तपासा.",
     "icon": "fa-solid fa-lightbulb",
     "url": "science/light.html"
   }
