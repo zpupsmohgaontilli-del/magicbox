@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MagicBox</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      --c-blue: #4285F4;
+      --c-red: #EA4335;
+      --c-yellow: #FBBC05;
+      --c-green: #34A853;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Top Bar */
+    header {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .theme-toggle {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease;
+    }
+    .theme-toggle:hover { transform: scale(1.08); }
+
+    /* Main Center Stage */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .title {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 0.2rem;
+    }
+
+    .c1 { color: var(--c-blue); }
+    .c2 { color: var(--c-red); }
+    .c3 { color: var(--c-yellow); }
+    .c4 { color: var(--c-blue); }
+    .c5 { color: var(--c-green); }
+    .c6 { color: var(--c-red); }
+    .c7 { color: var(--c-yellow); }
+    .c8 { color: var(--c-blue); }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Action Buttons */
+    .button-container {
+      display: flex;
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-maths {
+      color: var(--c-blue);
+      border-color: rgba(66, 133, 244, 0.3);
+    }
+    .btn-maths:hover {
+      background: var(--c-blue);
+      color: #fff;
+      transform: translateY(-3px);
+    }
+
+    .btn-science {
+      color: var(--c-green);
+      border-color: rgba(52, 168, 83, 0.3);
+    }
+    .btn-science:hover {
+      background: var(--c-green);
+      color: #fff;
+      transform: translateY(-3px);
+    }
+
+    /* Drawer / Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: var(--surface);
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      border-radius: 24px 24px 0 0;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-title { font-size: 1.3rem; font-weight: 700; }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .card-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding-right: 0.3rem;
+    }
+
+    .sim-card {
+      padding: 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .sim-card:hover {
+      background: var(--bg);
+      transform: translateX(4px);
+    }
+
+    .sim-info { display: flex; align-items: center; gap: 1rem; }
+    .sim-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      background: var(--bg);
+    }
+
+    .sim-text h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .sim-text p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Footer */
+    footer {
+      padding: 1.2rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      border-top: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+      .button-container { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="theme-toggle" id="themeBtn" title="Toggle Light/Dark Mode">
+      <i class="fa-solid fa-moon"></i>
+    </button>
+  </header>
+
+  <main>
+    <h1 class="title">
+      <span class="c1">M</span><span class="c2">a</span><span class="c3">g</span><span class="c4">i</span><span class="c5">c</span><span class="c6">B</span><span class="c7">o</span><span class="c8">x</span>
+    </h1>
+    <p class="tagline">Interactive STEM Exploration & Simulations</p>
+
+    <div class="button-container">
+      <button class="btn btn-maths" onclick="openDrawer('maths')">
+        <i class="fa-solid fa-calculator"></i> Maths
+      </button>
+      <button class="btn btn-science" onclick="openDrawer('science')">
+        <i class="fa-solid fa-atom"></i> Science
+      </button>
+    </div>
+  </main>
+
+  <!-- Popup List Drawer -->
+  <div class="modal-overlay" id="drawer" onclick="closeDrawer(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="drawerTitle">Simulations</h3>
+        <button class="btn-close" onclick="closeDrawer()">&times;</button>
+      </div>
+      <div class="card-list" id="cardList"></div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; Vrushabh H. Borkar, Graduate Teacher, ZP Upper Primary School, Mohgaon (Tilli), Block Goregaon, District Gondia
+  </footer>
+
+  <script>
+    let allSimulations = [];
+
+    // Load simulations dynamically from JSON
+    async function loadData() {
+      try {
+        const res = await fetch('simulations.json?t=' + Date.now());
+        allSimulations = await res.json();
+      } catch (e) {
+        console.error("Could not load simulations.json", e);
+      }
+    }
+    loadData();
+
+    function openDrawer(category) {
+      const drawer = document.getElementById('drawer');
+      const title = document.getElementById('drawerTitle');
+      const list = document.getElementById('cardList');
+
+      title.innerText = (category === 'maths') ? '📐 Mathematics Tools' : '🔬 Science Tools';
+      list.innerHTML = '';
+
+      const filtered = allSimulations.filter(s => s.category === category);
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p style="padding:1.5rem; text-align:center; color:var(--text-muted)">New simulations coming soon!</p>`;
+      } else {
+        filtered.forEach(sim => {
+          const card = document.createElement('a');
+          card.href = sim.url;
+          card.className = 'sim-card';
+          card.innerHTML = `
+            <div class="sim-info">
+              <div class="sim-icon"><i class="${sim.icon}"></i></div>
+              <div class="sim-text">
+                <h4>${sim.title}</h4>
+                <p>${sim.desc}</p>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color:var(--text-muted); font-size:0.8rem;"></i>
+          `;
+          list.appendChild(card);
+        });
+      }
+      drawer.classList.add('active');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('active');
+    }
+
+    // Light / Dark Theme logic
+    const themeBtn = document.getElementById('themeBtn');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const currentTheme = localStorage.getItem('mb_theme') || (prefersDark ? 'dark' : 'light');
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      themeBtn.innerHTML = theme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+      localStorage.setItem('mb_theme', theme);
+    }
+
+    applyTheme(currentTheme);
+
+    themeBtn.addEventListener('click', () => {
+      const active = document.documentElement.getAttribute('data-theme');
+      applyTheme(active === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

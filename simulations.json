@@ -1,0 +1,18 @@
+[
+  {
+    "id": "fractions-strips",
+    "category": "maths",
+    "title": "Fraction Strips",
+    "desc": "Visualize fractions, parts of a whole, and equivalents.",
+    "icon": "fa-solid fa-chart-pie",
+    "url": "maths/fractions.html"
+  },
+  {
+    "id": "light-reflection",
+    "category": "science",
+    "title": "Light Reflection Lab",
+    "desc": "Explore incident and reflected rays with an interactive mirror.",
+    "icon": "fa-solid fa-lightbulb",
+    "url": "science/light.html"
+  }
+]
