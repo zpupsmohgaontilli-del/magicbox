@@ -6,13 +6,6 @@ Built with clean, vanilla web technologies, MagicBox requires zero installation,
 
 ---
 
-## 🚀 Live Demo
-
-Access the live portal here:  
-👉 **`https://<your-username>.github.io/magicbox/`**  
-*(Replace `<your-username>` with your actual GitHub username)*
-
----
 
 ## ✨ Features
 
