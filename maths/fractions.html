@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>अपूर्णांक पट्टी — MagicBox</title>
+  <title>अपूर्णांक पट्टी (Fraction Strips) — MagicBox</title>
 
-  <!-- Google Fonts supporting clean Devanagari script -->
+  <!-- Google Fonts for Devanagari & Modern UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <style>
     :root {
       --primary: #2563eb;
-      --primary-light: #dbeafe;
+      --primary-hover: #1d4ed8;
       --bg: #f8fafc;
       --surface: #ffffff;
       --text: #0f172a;
-      --muted: #475569;
+      --muted: #64748b;
       --border: #cbd5e1;
-      --accent: #16a34a;
     }
 
     * {
@@ -28,79 +27,99 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
 
-    body {
-      font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
+    /* Fixed Viewport: Exactly 100vh / 100dvh to prevent any scrolling */
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      font-family: 'Noto Sans Devanagari', 'Poppins', sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 1.5rem 1rem;
     }
 
-    .top-nav {
-      width: 100%;
-      max-width: 680px;
+    /* Compact Top Header */
+    header {
+      height: 48px;
+      min-height: 48px;
+      padding: 0 1rem;
       display: flex;
-      justify-content: flex-start;
-      margin-bottom: 1rem;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 20;
     }
 
     .btn-back {
       text-decoration: none;
       color: var(--primary);
+      font-size: 0.88rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-      background: var(--surface);
-      padding: 0.5rem 1rem;
+      gap: 0.4rem;
+      background: #eff6ff;
+      padding: 0.35rem 0.8rem;
       border-radius: 999px;
-      border: 1px solid var(--border);
+      border: 1px solid #bfdbfe;
+      transition: all 0.2s ease;
+    }
+    .btn-back:hover {
+      background: #dbeafe;
+      transform: translateX(-2px);
     }
 
-    .card {
-      background: var(--surface);
+    .title-banner {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--text);
+    }
+
+    /* Main Responsive Board */
+    main {
+      flex: 1;
       width: 100%;
-      max-width: 680px;
-      border-radius: 20px;
-      padding: 1.75rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid var(--border);
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      min-height: 0; /* Prevents overflow pushing outside container */
+    }
+
+    .instruction-tag {
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      color: var(--muted);
+      font-weight: 600;
       text-align: center;
     }
 
-    h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 0.35rem;
-    }
-
-    p.subtitle {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
-    }
-
-    /* Interactive Fraction Strip */
+    /* Fraction Strip Stage */
     .strip-wrapper {
-      margin: 1.5rem 0;
+      width: 100%;
+      padding: 0.25rem 0;
     }
 
     .strip-container {
       width: 100%;
-      height: 76px;
+      height: clamp(60px, 11vh, 90px);
       display: flex;
-      border: 3px solid #1e293b;
-      border-radius: 14px;
+      border: 3px solid #0f172a;
+      border-radius: 16px;
       overflow: hidden;
       background: #e2e8f0;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
     }
 
     .part {
@@ -108,14 +127,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #ffffff;
+      background: var(--surface);
       border-right: 2px dashed #94a3b8;
-      font-size: 1.15rem;
+      font-size: clamp(1rem, 2.5vw, 1.35rem);
       font-weight: 700;
       cursor: pointer;
-      user-select: none;
-      transition: background 0.15s ease, transform 0.1s ease;
       color: var(--muted);
+      transition: background 0.15s ease, color 0.15s ease;
     }
 
     .part:last-child {
@@ -127,25 +145,28 @@
       color: #ffffff;
     }
 
-    /* Fraction Display Math Box */
-    .math-display {
+    /* Fraction Output Board */
+    .math-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 0.6rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 1.5rem;
-      margin: 1.5rem 0;
-      padding: 1rem;
-      background: #f1f5f9;
-      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      width: 100%;
+      max-width: 520px;
     }
 
-    .fraction-block {
+    .fraction-badge {
       display: inline-flex;
       flex-direction: column;
       align-items: center;
-      font-size: 1.6rem;
-      font-weight: 700;
-      min-width: 50px;
+      font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+      font-weight: 800;
+      min-width: 48px;
     }
 
     .fraction-top {
@@ -162,29 +183,42 @@
       padding-top: 2px;
     }
 
-    .labels-block {
-      text-align: left;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .badge-label {
-      font-weight: 700;
-    }
-
-    /* Denominator Selector Buttons */
-    .controls-label {
+    .fraction-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      font-size: clamp(0.82rem, 2vw, 0.95rem);
+      color: var(--text);
       font-weight: 600;
-      margin-bottom: 0.75rem;
+      border-left: 2px solid var(--border);
+      padding-left: 1.2rem;
+    }
+
+    .fraction-legend b {
+      color: var(--primary);
+    }
+
+    /* Denominator Controls */
+    .controls-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .controls-title {
+      font-size: 0.85rem;
+      font-weight: 700;
       color: var(--muted);
-      font-size: 0.95rem;
     }
 
     .button-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.6rem;
+      gap: 0.45rem;
+      width: 100%;
     }
 
     .btn-denom {
@@ -192,9 +226,9 @@
       border: 1.5px solid var(--border);
       color: var(--text);
       font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      padding: 0.6rem 1rem;
+      font-size: clamp(0.8rem, 1.8vw, 0.92rem);
+      font-weight: 700;
+      padding: 0.45rem 0.85rem;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -204,66 +238,89 @@
       background: var(--primary);
       color: #ffffff;
       border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
     }
 
-    .reset-btn {
-      margin-top: 1.25rem;
+    .btn-reset {
       background: none;
       border: none;
       color: #dc2626;
       font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 0.82rem;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+    }
+    .btn-reset:hover {
+      background: #fee2e2;
+    }
+
+    /* Small Screen Adjustments */
+    @media (max-width: 600px) {
+      header { height: 42px; min-height: 42px; padding: 0 0.75rem; }
+      .title-banner { font-size: 0.85rem; }
+      main { padding: 0.5rem 0.75rem; }
+      .math-card { gap: 1rem; padding: 0.5rem 1rem; }
+      .fraction-legend { padding-left: 0.8rem; }
+      .btn-denom { padding: 0.4rem 0.7rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="top-nav">
+  <!-- Top Bar -->
+  <header>
     <a href="../index.html" class="btn-back">
-      <i class="fa-solid fa-arrow-left"></i> मुख्य पान (Home)
+      <i class="fa-solid fa-arrow-left"></i> MagicBox
     </a>
-  </div>
+    <div class="title-banner">
+      <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+      <span>अपूर्णांक पट्टी (Fraction Strips)</span>
+    </div>
+  </header>
 
-  <main class="card">
-    <h1>अपूर्णांक पट्टी (Fraction Strips)</h1>
-    <p class="subtitle">रंगवण्यासाठी खालील भागांवर स्पर्श करा (टॅप करा)</p>
+  <!-- Centered Auto-Fit Play Area -->
+  <main>
+    <div class="instruction-tag">
+      रंगवण्यासाठी किंवा भाग निवडण्यासाठी खालील पट्ट्यांवर स्पर्श करा (Tap to shade)
+    </div>
 
-    <!-- Fraction Strip Box -->
+    <!-- The Interactive Strip -->
     <div class="strip-wrapper">
       <div class="strip-container" id="stripBox"></div>
     </div>
 
-    <!-- Live Fraction Output Box -->
-    <div class="math-display">
-      <div class="fraction-block">
+    <!-- Mathematical Visualizer -->
+    <div class="math-card">
+      <div class="fraction-badge">
         <span class="fraction-top" id="numeratorDisplay">०</span>
         <span class="fraction-bottom" id="denominatorDisplay">४</span>
       </div>
-      <div class="labels-block">
-        <div><span class="badge-label" style="color:var(--primary);">अंश (Numerator):</span> रंगवलेले भाग = <span id="numText">०</span></div>
-        <div><span class="badge-label">छेद (Denominator):</span> एकूण समान भाग = <span id="denText">४</span></div>
+      <div class="fraction-legend">
+        <div>अंश (Numerator): <b id="numText">०</b> भाग रंगवले</div>
+        <div>छेद (Denominator): <span id="denText" style="color:#0f172a; font-weight:700;">४</span> एकूण समान भाग</div>
       </div>
     </div>
 
-    <!-- Denominator Changer -->
-    <div class="controls-label">समान भागांची संख्या निवडा (छेद):</div>
-    <div class="button-grid">
-      <button class="btn-denom" onclick="setDenominator(2)">२ भाग (निम्मे)</button>
-      <button class="btn-denom" onclick="setDenominator(3)">३ भाग (तिहाई)</button>
-      <button class="btn-denom active" onclick="setDenominator(4)">४ भाग (पाव)</button>
-      <button class="btn-denom" onclick="setDenominator(5)">५ भाग</button>
-      <button class="btn-denom" onclick="setDenominator(6)">६ भाग</button>
-      <button class="btn-denom" onclick="setDenominator(8)">८ भाग</button>
-    </div>
+    <!-- Controls Dock -->
+    <div class="controls-container">
+      <div class="controls-title">समान भागांची संख्या निवडा (छेद बदला):</div>
+      <div class="button-grid">
+        <button class="btn-denom" onclick="setDenominator(2)">२ भाग (१/२)</button>
+        <button class="btn-denom" onclick="setDenominator(3)">३ भाग (१/३)</button>
+        <button class="btn-denom active" onclick="setDenominator(4)">४ भाग (१/४)</button>
+        <button class="btn-denom" onclick="setDenominator(5)">५ भाग (१/५)</button>
+        <button class="btn-denom" onclick="setDenominator(6)">६ भाग (१/६)</button>
+        <button class="btn-denom" onclick="setDenominator(8)">८ भाग (१/८)</button>
+        <button class="btn-denom" onclick="setDenominator(10)">१० भाग (१/१०)</button>
+      </div>
 
-    <div>
-      <button class="reset-btn" onclick="resetShading()">
-        <i class="fa-solid fa-rotate-left"></i> सर्व भाग रिकामे करा
+      <button class="btn-reset" onclick="resetShading()">
+        <i class="fa-solid fa-rotate-left"></i> सर्व भाग पूर्ववत करा (Reset)
       </button>
     </div>
   </main>
@@ -271,7 +328,7 @@
   <script>
     const marathiDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
 
-    function toMarathiNumber(num) {
+    function toMarathi(num) {
       return num.toString().split('').map(char => marathiDigits[parseInt(char)] || char).join('');
     }
 
@@ -284,7 +341,7 @@
       for (let i = 0; i < currentDenom; i++) {
         const part = document.createElement('div');
         part.className = 'part';
-        part.innerText = `१/${toMarathiNumber(currentDenom)}`;
+        part.innerText = `१/${toMarathi(currentDenom)}`;
         
         part.addEventListener('click', () => {
           part.classList.toggle('active');
@@ -299,20 +356,19 @@
     function updateMathDisplay() {
       const activeCount = document.querySelectorAll('.part.active').length;
       
-      document.getElementById('numeratorDisplay').innerText = toMarathiNumber(activeCount);
-      document.getElementById('denominatorDisplay').innerText = toMarathiNumber(currentDenom);
+      document.getElementById('numeratorDisplay').innerText = toMarathi(activeCount);
+      document.getElementById('denominatorDisplay').innerText = toMarathi(currentDenom);
 
-      document.getElementById('numText').innerText = toMarathiNumber(activeCount);
-      document.getElementById('denText').innerText = toMarathiNumber(currentDenom);
+      document.getElementById('numText').innerText = toMarathi(activeCount);
+      document.getElementById('denText').innerText = toMarathi(currentDenom);
     }
 
     function setDenominator(n) {
       currentDenom = n;
 
-      // Update active state on buttons
       const buttons = document.querySelectorAll('.btn-denom');
       buttons.forEach(btn => {
-        if (btn.innerText.startsWith(toMarathiNumber(n))) {
+        if (btn.innerText.startsWith(toMarathi(n))) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
@@ -328,8 +384,8 @@
       updateMathDisplay();
     }
 
-    // Initial render
-    renderStrip();
+    // Launch immediately on page load
+    window.addEventListener('DOMContentLoaded', renderStrip);
   </script>
 </body>
 </html>
