@@ -15,12 +15,4 @@
     "icon": "fa-solid fa-lightbulb",
     "url": "science/light.html"
   }
-],
-{
-  "id": "new-tool-id",
-  "category": "science",
-  "title": "Ray Optics",
-  "desc": "Simulate convex and concave reflection.",
-  "icon": "fa-solid fa-lightbulb",
-  "url": "science/optics.html"
-}
+]
