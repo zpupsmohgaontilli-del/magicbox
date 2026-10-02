@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MagicBox</title>
+  
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome for crisp educational icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-blue: #4285F4;
+      --primary-red: #EA4335;
+      --primary-yellow: #FBBC05;
+      --primary-green: #34A853;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Google-Style Header */
+    .brand-container {
+      text-align: center;
+      margin-top: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .brand-title {
+      font-size: clamp(2.8rem, 8vw, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -1px;
+      display: inline-flex;
+      user-select: none;
+    }
+
+    /* Multi-color Google style */
+    .char-1 { color: var(--primary-blue); }
+    .char-2 { color: var(--primary-red); }
+    .char-3 { color: var(--primary-yellow); }
+    .char-4 { color: var(--primary-blue); }
+    .char-5 { color: var(--primary-green); }
+    .char-6 { color: var(--primary-red); }
+    .char-7 { color: var(--primary-yellow); }
+    .char-8 { color: var(--primary-blue); }
+
+    .brand-tagline {
+      color: var(--text-muted);
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+
+    /* Category Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .btn-category {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.5rem;
+      border: 2px solid transparent;
+      border-radius: 9999px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--card-bg);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .btn-maths {
+      color: var(--primary-blue);
+      border-color: #dbeafe;
+    }
+    .btn-maths:hover, .btn-maths.active {
+      background: var(--primary-blue);
+      color: #ffffff;
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-science {
+      color: var(--primary-green);
+      border-color: #dcfce7;
+    }
+    .btn-science:hover, .btn-science.active {
+      background: var(--primary-green);
+      color: #ffffff;
+      border-color: var(--primary-green);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Filter indicator */
+    .filter-info {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding: 0 0.5rem;
+    }
+
+    .filter-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .btn-reset {
+      font-size: 0.85rem;
+      color: var(--primary-blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    /* Dynamic Grid of Simulation Cards */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .tool-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-top {
+      margin-bottom: 1.2rem;
+    }
+
+    .card-badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-maths {
+      background: #eff6ff;
+      color: var(--primary-blue);
+    }
+
+    .badge-science {
+      background: #f0fdf4;
+      color: var(--primary-green);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .btn-launch {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      background: #f1f5f9;
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .btn-launch:hover {
+      background: var(--text-main);
+      color: #ffffff;
+    }
+
+    /* Footer styling */
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Mobile Adaptability */
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      .action-buttons {
+        gap: 0.75rem;
+      }
+      .btn-category {
+        font-size: 0.95rem;
+        padding: 0.75rem 1rem;
+      }
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <!-- Google Style Brand Title -->
+    <div class="brand-container">
+      <h1 class="brand-title">
+        <span class="char-1">M</span><span class="char-2">a</span><span class="char-3">g</span><span class="char-4">i</span><span class="char-5">c</span><span class="char-6">B</span><span class="char-7">o</span><span class="char-8">x</span>
+      </h1>
+      <p class="brand-tagline">Interactive STEM Exploration & Simulations</p>
+    </div>
+
+    <!-- Category Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn-category btn-maths" onclick="filterCategory('maths')">
+        <i class="fa-solid fa-calculator"></i> Maths
+      </button>
+      <button class="btn-category btn-science" onclick="filterCategory('science')">
+        <i class="fa-solid fa-atom"></i> Science
+      </button>
+    </div>
+
+    <!-- Filter Indicator & Quick Reset -->
+    <div class="filter-info">
+      <span class="filter-label" id="currentViewText">All Simulations</span>
+      <button class="btn-reset" id="resetBtn" style="display:none;" onclick="filterCategory('all')">Show All</button>
+    </div>
+
+    <!-- Dynamic Container for Tools -->
+    <section class="tools-grid" id="toolsGrid">
+      <!-- Tool cards will be populated automatically by JavaScript -->
+    </section>
+  </main>
+
+  <!-- Credited Footer -->
+  <footer>
+    &copy; Vrushabh H. Borkar, Graduate Teacher, ZP Upper Primary School, Mohgaon (Tilli), Block Goregaon, District Gondia
+  </footer>
+
+  <script>
+    /* =========================================================================
+       DYNAMIC SIMULATION REGISTRY
+       To add a new simulation, simply add an object to this list!
+       ========================================================================= */
+    const simulations = [
+      {
+        id: "fractions-visualizer",
+        category: "maths",
+        title: "Fraction Strips",
+        desc: "Interactive visual model for equivalent fractions and operations.",
+        icon: "fa-solid fa-chart-pie",
+        url: "#" // Replace with your tool's relative link, e.g., "simulations/fractions.html"
+      },
+      {
+        id: "geometry-angles",
+        category: "maths",
+        title: "Angle Explorer",
+        desc: "Measure, rotate, and discover complementary and supplementary angles.",
+        icon: "fa-solid fa-shapes",
+        url: "#"
+      },
+      {
+        id: "ray-optics",
+        category: "science",
+        title: "Optics & Light Rays",
+        desc: "Simulate reflection, refraction, and focal lengths with concave/convex lenses.",
+        icon: "fa-solid fa-lightbulb",
+        url: "#"
+      },
+      {
+        id: "simple-circuit",
+        category: "science",
+        title: "DC Circuit Lab",
+        desc: "Connect batteries, switches, resistors, and bulbs to test current flow.",
+        icon: "fa-solid fa-bolt",
+        url: "#"
+      }
+    ];
+
+    let currentFilter = 'all';
+
+    function renderTools(filter = 'all') {
+      const grid = document.getElementById('toolsGrid');
+      const resetBtn = document.getElementById('resetBtn');
+      const currentViewText = document.getElementById('currentViewText');
+      
+      grid.innerHTML = '';
+      
+      const filtered = (filter === 'all') 
+        ? simulations 
+        : simulations.filter(item => item.category === filter);
+
+      if (filter === 'all') {
+        currentViewText.innerText = `All Simulations (${filtered.length})`;
+        resetBtn.style.display = 'none';
+      } else {
+        const catName = filter.charAt(0).toUpperCase() + filter.slice(1);
+        currentViewText.innerText = `${catName} Simulations (${filtered.length})`;
+        resetBtn.style.display = 'inline-block';
+      }
+
+      filtered.forEach(sim => {
+        const isMath = sim.category === 'maths';
+        const badgeClass = isMath ? 'badge-maths' : 'badge-science';
+        const categoryLabel = isMath ? 'Maths' : 'Science';
+
+        const card = document.createElement('article');
+        card.className = 'tool-card';
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="card-badge ${badgeClass}">${categoryLabel}</span>
+            <h2 class="card-title">
+              <i class="${sim.icon}" style="color: ${isMath ? 'var(--primary-blue)' : 'var(--primary-green)'};"></i>
+              ${sim.title}
+            </h2>
+            <p class="card-desc">${sim.desc}</p>
+          </div>
+          <a href="${sim.url}" class="btn-launch">
+            Launch Tool <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterCategory(category) {
+      currentFilter = category;
+      
+      // Update button active state
+      document.querySelector('.btn-maths').classList.toggle('active', category === 'maths');
+      document.querySelector('.btn-science').classList.toggle('active', category === 'science');
+
+      renderTools(category);
+    }
+
+    // Initial render on page load
+    renderTools('all');
+  </script>
+</body>
+</html>
