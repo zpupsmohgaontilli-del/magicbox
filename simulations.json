@@ -12,7 +12,7 @@
     "category": "maths",
     "title": "mathstamp",
     "desc": "गणिताच्या मुलभूत क्रिया समजून घेण्यासाठी परस्परसंवादी साधन.",
-    "icon": "fa-solid fa-maths",
+    "icon": "fa-solid fa-calculator",
     "url": "maths/mathstamp.html"
   },
   {
@@ -28,7 +28,7 @@
     "category": "science",
     "title": "प्रकाशसंश्लेषण (Photosynthesis)",
     "desc": "सूर्यप्रकाश, क्षार व पाणी यांचा प्रकाशसंश्लेषणावर होणारा परिणाम तपासा.",
-    "icon": "fa-solid fa-sunlight",
+    "icon": "fa-solid fa-leaf",
     "url": "science/photosynthesis.html"
   }
 ]
