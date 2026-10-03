@@ -8,12 +8,20 @@
     "url": "maths/fractions.html"
   },
   {
+    "id": "mathstamp",
+    "category": "maths",
+    "title": "mathstamp",
+    "desc": "गणिताच्या मुलभूत क्रिया समजून घेण्यासाठी परस्परसंवादी साधन.",
+    "icon": "fa-solid fa-maths",
+    "url": "maths/mathstamp.html"
+  },
+  {
     "id": "light-reflection",
     "category": "science",
     "title": "प्रकाशाचे परावर्तन (Reflection of Light)",
     "desc": "सपाट आरसा, आपाती किरण आणि परावर्तित कोन तपासा.",
     "icon": "fa-solid fa-lightbulb",
-    "url": "science/light.html"
+    "url": "science/torch.html"
   },
   {
     "id": "photosynthesis",
