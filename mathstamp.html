@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MathStamp Digital TLM</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-add: #10b981;
+            --accent-sub: #3b82f6;
+            --accent-mul: #f59e0b;
+            --accent-div: #8b5cf6;
+            --accent-int: #ec4899;
+            --accent-frac: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(8px, 1.2vh, 18px) clamp(12px, 1.5vw, 24px);
+        }
+
+        /* Responsive App Header */
+        .app-title-container {
+            text-align: center;
+            margin-bottom: clamp(4px, 0.8vh, 10px);
+        }
+
+        .app-title {
+            font-size: clamp(1.4rem, 2.2vw, 2.6rem);
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        .app-subtitle {
+            font-size: clamp(0.75rem, 1vw, 1.1rem);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Top HUD Bar */
+        .hud-bar {
+            width: 100%;
+            max-width: 1600px;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: clamp(10px, 1.2vh, 16px);
+            padding: clamp(6px, 1vh, 12px) clamp(12px, 1.5vw, 24px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: clamp(6px, 1vh, 14px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .hud-group {
+            display: flex;
+            align-items: center;
+            gap: clamp(8px, 1.2vw, 20px);
+        }
+
+        .stat-box {
+            background: #0f172a;
+            padding: clamp(4px, 0.6vh, 8px) clamp(10px, 1vw, 18px);
+            border-radius: 8px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: clamp(75px, 7vw, 120px);
+        }
+
+        .stat-label {
+            font-size: clamp(0.6rem, 0.75vw, 0.85rem);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+
+        .stat-value {
+            font-size: clamp(1.1rem, 1.6vw, 1.9rem);
+            font-weight: 800;
+            font-family: monospace;
+            color: #38bdf8;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: clamp(6px, 0.8vw, 12px);
+        }
+
+        label {
+            font-size: clamp(0.75rem, 0.9vw, 1rem);
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        select, button.action-btn {
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            padding: clamp(6px, 0.8vh, 10px) clamp(10px, 1vw, 16px);
+            border-radius: 8px;
+            font-size: clamp(0.8rem, 0.95vw, 1.1rem);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button.reset-btn {
+            background: #ef4444;
+            border-color: #dc2626;
+        }
+
+        button.fullscreen-btn {
+            background: #0284c7;
+            border-color: #0369a1;
+        }
+
+        /* 6 Module Responsive Dynamic Grid */
+        .modules-grid {
+            width: 100%;
+            max-width: 1600px;
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: clamp(8px, 1.2vh, 16px);
+        }
+
+        @media (max-width: 800px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+        }
+
+        .module-card {
+            background: var(--card-bg);
+            border-radius: clamp(12px, 1.5vh, 18px);
+            border: 2px solid #334155;
+            padding: clamp(8px, 1.2vh, 16px) clamp(12px, 1.5vw, 20px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: clamp(4px, 0.6vh, 8px);
+        }
+
+        .card-title {
+            font-size: clamp(0.95rem, 1.2vw, 1.4rem);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-badge {
+            width: clamp(8px, 0.9vw, 14px);
+            height: clamp(8px, 0.9vw, 14px);
+            border-radius: 50%;
+        }
+
+        .card-add .title-badge { background: var(--accent-add); }
+        .card-sub .title-badge { background: var(--accent-sub); }
+        .card-mul .title-badge { background: var(--accent-mul); }
+        .card-div .title-badge { background: var(--accent-div); }
+        .card-int .title-badge { background: var(--accent-int); }
+        .card-frac .title-badge { background: var(--accent-frac); }
+
+        .score-pill {
+            background: #0f172a;
+            padding: 3px clamp(6px, 0.8vw, 12px);
+            border-radius: 16px;
+            font-size: clamp(0.7rem, 0.8vw, 0.95rem);
+            color: var(--text-muted);
+            border: 1px solid #334155;
+        }
+
+        .problem-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0f172a;
+            border-radius: clamp(10px, 1.2vh, 14px);
+            padding: clamp(6px, 1vh, 12px) clamp(10px, 1.2vw, 18px);
+            border: 1px solid #1e293b;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .expression-box {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: clamp(4px, 0.8vw, 10px);
+            font-size: clamp(1.2rem, 1.8vw, 2.2rem);
+            font-weight: 800;
+            color: #f1f5f9;
+            flex-grow: 1;
+        }
+
+        .spinning {
+            animation: spinRoll 0.35s ease-in-out;
+        }
+
+        @keyframes spinRoll {
+            0% { transform: translateY(-8px) scale(0.96); opacity: 0.4; }
+            50% { transform: translateY(8px) scale(1.04); opacity: 0.7; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .answer-box {
+            background: #1e293b;
+            border: 2px dashed #64748b;
+            border-radius: 10px;
+            padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1vw, 16px);
+            min-width: clamp(70px, 7vw, 120px);
+            text-align: center;
+            cursor: pointer;
+            color: #38bdf8;
+            font-size: clamp(1.1rem, 1.6vw, 2rem);
+            font-weight: 800;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-box.revealed {
+            border-style: solid;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+        }
+
+        /* 3D Physical Lever Auto-Scaled */
+        .lever-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .lever-container {
+            width: clamp(34px, 3vw, 48px);
+            height: clamp(54px, 6.5vh, 76px);
+            background: #334155;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.6), 0 3px 5px rgba(0,0,0,0.3);
+            border: 2px solid #475569;
+        }
+
+        .lever-track {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: calc(100% - 16px);
+            background: #0f172a;
+            border-radius: 3px;
+        }
+
+        .lever-handle {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: clamp(24px, 2.4vw, 34px);
+            height: clamp(24px, 2.4vw, 34px);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #f87171, #dc2626);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+            transition: top 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #fee2e2;
+        }
+
+        .lever-container.pulled .lever-handle {
+            top: calc(100% - clamp(28px, 2.6vw, 38px));
+            background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a);
+            border-color: #dcfce7;
+        }
+
+        .lever-label {
+            font-size: clamp(0.55rem, 0.65vw, 0.75rem);
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .fraction-view {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            font-size: clamp(1rem, 1.4vw, 1.7rem);
+            margin: 0 3px;
+        }
+
+        .fraction-num {
+            border-bottom: 2px solid #f1f5f9;
+            padding: 0 3px;
+        }
+
+        .fraction-den {
+            padding: 0 3px;
+        }
+
+        footer {
+            margin-top: clamp(4px, 0.8vh, 10px);
+            padding: clamp(6px, 0.8vh, 12px) 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: clamp(0.75rem, 0.85vw, 1rem);
+            text-align: center;
+            max-width: 900px;
+            line-height: 1.4;
+        }
+
+        footer strong {
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-title-container">
+        <h1 class="app-title">MathStamp Digital TLM</h1>
+        <p class="app-subtitle">Interactive Dynamic Problem Generator for Large Touch Panels & Smartboards</p>
+    </div>
+
+    <div class="hud-bar">
+        <div class="hud-group">
+            <div class="stat-box">
+                <span class="stat-label">Timer</span>
+                <span class="stat-value" id="timer-display">00:00</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Score</span>
+                <span class="stat-value" id="score-display">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Solved</span>
+                <span class="stat-value" id="solved-display">0</span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="digit-select">Digits:</label>
+            <select id="digit-select" onchange="changeDigitCount()">
+                <option value="2" selected>2 Digits</option>
+                <option value="3">3 Digits</option>
+                <option value="4">4 Digits</option>
+                <option value="5">5 Digits</option>
+                <option value="6">6 Digits</option>
+            </select>
+            <button class="action-btn fullscreen-btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+            <button class="action-btn reset-btn" onclick="resetGame()">Reset</button>
+        </div>
+    </div>
+
+    <div class="modules-grid">
+
+        <div class="module-card card-add" id="card-add">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>1. Addition</div>
+                <span class="score-pill" id="score-add">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-add">-- + --</div>
+                <div class="answer-box" id="ansbox-add" onclick="revealDirectly('add')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-add" onclick="pullLever('add')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card card-sub" id="card-sub">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>2. Subtraction</div>
+                <span class="score-pill" id="score-sub">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-sub">-- - --</div>
+                <div class="answer-box" id="ansbox-sub" onclick="revealDirectly('sub')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-sub" onclick="pullLever('sub')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+                <div class="module-card card-mul" id="card-mul">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>3. Multiplication</div>
+                <span class="score-pill" id="score-mul">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-mul">-- × --</div>
+                <div class="answer-box" id="ansbox-mul" onclick="revealDirectly('mul')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-mul" onclick="pullLever('mul')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card card-div" id="card-div">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>4. Division</div>
+                <span class="score-pill" id="score-div">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-div">-- ÷ --</div>
+                <div class="answer-box" id="ansbox-div" onclick="revealDirectly('div')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-div" onclick="pullLever('div')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card card-int" id="card-int">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>5. Operations on Integers (+, -, ×, ÷)</div>
+                <span class="score-pill" id="score-int">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-int">(-a) + (+b)</div>
+                <div class="answer-box" id="ansbox-int" onclick="revealDirectly('int')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-int" onclick="pullLever('int')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-card card-frac" id="card-frac">
+            <div class="card-header">
+                <div class="card-title"><div class="title-badge"></div>6. Operations on Fractions (+, -, ×, ÷)</div>
+                <span class="score-pill" id="score-frac">Solved: 0</span>
+            </div>
+            <div class="problem-area">
+                <div class="expression-box" id="expr-frac">1/2 + 1/4</div>
+                <div class="answer-box" id="ansbox-frac" onclick="revealDirectly('frac')">?</div>
+                <div class="lever-wrapper">
+                    <div class="lever-container" id="lever-frac" onclick="pullLever('frac')">
+                        <div class="lever-track"></div>
+                        <div class="lever-handle"></div>
+                    </div>
+                    <span class="lever-label">Pull</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <strong>MathStamp Digital TLM</strong> | Concept & Development: <strong>Vrushabh H. Borkar</strong> (Graduate Teacher, ZP Upper Primary School, Mohgaon (Tilli))
+    </footer>
+
+    <script>
+        let totalScore = 0;
+        let totalSolved = 0;
+        let digitCount = 2;
+        let secondsElapsed = 0;
+        let timerInterval = null;
+        let timerStarted = false;
+
+        const sectionStats = {
+            add: { solved: 0, currentAns: null },
+            sub: { solved: 0, currentAns: null },
+            mul: { solved: 0, currentAns: null },
+            div: { solved: 0, currentAns: null },
+            int: { solved: 0, currentAns: null },
+            frac: { solved: 0, currentAns: null }
+        };
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getNDigitNumber(digits) {
+            const min = Math.pow(10, digits - 1);
+            const max = Math.pow(10, digits) - 1;
+            return getRandomInt(min, max);
+        }
+
+        function gcd(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b) {
+                let t = b;
+                b = a % b;
+                a = t;
+            }
+            return a;
+        }
+
+        function startTimer() {
+            if (!timerStarted) {
+                timerStarted = true;
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                    const secs = String(secondsElapsed % 60).padStart(2, '0');
+                    document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+                }, 1000);
+            }
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            timerStarted = false;
+            secondsElapsed = 0;
+            totalScore = 0;
+            totalSolved = 0;
+            document.getElementById('timer-display').innerText = "00:00";
+            document.getElementById('score-display').innerText = "0";
+            document.getElementById('solved-display').innerText = "0";
+
+            for (let type in sectionStats) {
+                sectionStats[type].solved = 0;
+                document.getElementById(`score-${type}`).innerText = `Solved: 0`;
+                generateProblem(type);
+            }
+        }
+
+        function changeDigitCount() {
+            digitCount = parseInt(document.getElementById('digit-select').value);
+            for (let type in sectionStats) {
+                generateProblem(type);
+            }
+        }
+
+        function pullLever(type) {
+            startTimer();
+            const lever = document.getElementById(`lever-${type}`);
+            lever.classList.add('pulled');
+
+            setTimeout(() => {
+                lever.classList.remove('pulled');
+            }, 300);
+
+            generateProblem(type);
+        }
+
+        function generateProblem(type) {
+            const exprEl = document.getElementById(`expr-${type}`);
+            const ansBox = document.getElementById(`ansbox-${type}`);
+
+            ansBox.classList.remove('revealed');
+            ansBox.innerText = '?';
+            delete ansBox.dataset.solvedThisRound;
+
+            exprEl.classList.add('spinning');
+            setTimeout(() => exprEl.classList.remove('spinning'), 350);
+
+            let a, b, result;
+
+            switch (type) {
+                case 'add':
+                    a = getNDigitNumber(digitCount);
+                    b = getNDigitNumber(digitCount);
+                    result = a + b;
+                    exprEl.innerHTML = `${a.toLocaleString()} + ${b.toLocaleString()} =`;
+                    sectionStats.add.currentAns = result.toString();
+                    break;
+
+                case 'sub':
+                    a = getNDigitNumber(digitCount);
+                    b = getNDigitNumber(digitCount);
+                    if (a < b) [a, b] = [b, a];
+                    result = a - b;
+                    exprEl.innerHTML = `${a.toLocaleString()} - ${b.toLocaleString()} =`;
+                    sectionStats.sub.currentAns = result.toString();
+                    break;
+
+                case 'mul':
+                    a = getNDigitNumber(Math.min(digitCount, 4));
+                    b = digitCount > 3 ? getRandomInt(12, 99) : getRandomInt(2, 12);
+                    result = a * b;
+                    exprEl.innerHTML = `${a.toLocaleString()} × ${b.toLocaleString()} =`;
+                    sectionStats.mul.currentAns = result.toString();
+                    break;
+
+                case 'div':
+                    b = getRandomInt(2, digitCount > 3 ? 25 : 12);
+                    let multiplier = getNDigitNumber(Math.max(1, digitCount - 1));
+                    a = b * multiplier;
+                    result = multiplier;
+                    exprEl.innerHTML = `${a.toLocaleString()} ÷ ${b.toLocaleString()} =`;
+                    sectionStats.div.currentAns = result.toString();
+                    break;
+
+                case 'int':
+                    const opInt = ['+', '-', '×', '÷'][getRandomInt(0, 3)];
+                    let num1, num2;
+
+                    if (opInt === '÷') {
+                        num2 = getRandomInt(-15, 15);
+                        if (num2 === 0) num2 = 3;
+                        let mult = getRandomInt(-12, 12);
+                        if (mult === 0) mult = 2;
+                        num1 = num2 * mult;
+                        result = mult;
+                    } else {
+                        num1 = getRandomInt(-50, 50);
+                        num2 = getRandomInt(-50, 50);
+                        if (num1 === 0) num1 = 12;
+                        if (num2 === 0) num2 = -8;
+
+                        if (opInt === '+') result = num1 + num2;
+                        else if (opInt === '-') result = num1 - num2;
+                        else if (opInt === '×') result = num1 * num2;
+                    }
+
+                    const fmt1 = num1 < 0 ? `(${num1})` : `(+${num1})`;
+                    const fmt2 = num2 < 0 ? `(${num2})` : `(+${num2})`;
+                    exprEl.innerHTML = `${fmt1} ${opInt} ${fmt2} =`;
+                    sectionStats.int.currentAns = result.toString();
+                    break;
+
+                case 'frac':
+                    const opFrac = ['+', '-', '×', '÷'][getRandomInt(0, 3)];
+                    let d1 = getRandomInt(2, 9);
+                    let d2 = getRandomInt(2, 9);
+                    let n1 = getRandomInt(1, d1 - 1);
+                    let n2 = getRandomInt(1, d2 - 1);
+
+                    let numAns, denAns;
+
+                    if (opFrac === '+') {
+                        numAns = n1 * d2 + n2 * d1;
+                        denAns = d1 * d2;
+                    } else if (opFrac === '-') {
+                        if (n1 * d2 < n2 * d1) {
+                            [n1, n2] = [n2, n1];
+                            [d1, d2] = [d2, d1];
+                        }
+                        numAns = n1 * d2 - n2 * d1;
+                        denAns = d1 * d2;
+                    } else if (opFrac === '×') {
+                        numAns = n1 * n2;
+                        denAns = d1 * d2;
+                    } else if (opFrac === '÷') {
+                        numAns = n1 * d2;
+                        denAns = d1 * n2;
+                    }
+
+                    const common = gcd(numAns, denAns);
+                    numAns /= common;
+                    denAns /= common;
+
+                    const htmlFrac = `
+                        <div class="fraction-view"><span class="fraction-num">${n1}</span><span class="fraction-den">${d1}</span></div>
+                        ${opFrac}
+                        <div class="fraction-view"><span class="fraction-num">${n2}</span><span class="fraction-den">${d2}</span></div>
+                        =`;
+                    exprEl.innerHTML = htmlFrac;
+
+                    if (denAns === 1) {
+                        sectionStats.frac.currentAns = numAns.toString();
+                    } else {
+                        sectionStats.frac.currentAns = `${numAns}/${denAns}`;
+                    }
+                    break;
+            }
+        }
+
+        function revealDirectly(type) {
+            startTimer();
+            const ansBox = document.getElementById(`ansbox-${type}`);
+            const correctAns = sectionStats[type].currentAns;
+
+            if (!ansBox.classList.contains('revealed')) {
+                ansBox.innerText = correctAns;
+                ansBox.classList.add('revealed');
+
+                if (!ansBox.dataset.solvedThisRound) {
+                    totalScore += 10;
+                    totalSolved += 1;
+                    sectionStats[type].solved += 1;
+
+                    document.getElementById('score-display').innerText = totalScore;
+                    document.getElementById('solved-display').innerText = totalSolved;
+                    document.getElementById(`score-${type}`).innerText = `Solved: ${sectionStats[type].solved}`;
+                    ansBox.dataset.solvedThisRound = "true";
+                }
+            }
+        }
+
+        window.onload = () => {
+            for (let type in sectionStats) {
+                generateProblem(type);
+            }
+        };
+    </script>
+</body>
+</html>
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
