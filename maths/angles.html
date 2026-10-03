@@ -32,29 +32,33 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      width: 100vw;
       overflow: hidden;
     }
 
     header {
       background: var(--panel-bg);
       border-bottom: 1px solid var(--border-color);
-      padding: 10px 20px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       z-index: 10;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     h1 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--text-main);
+      white-space: nowrap;
     }
 
     .toolbar {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       flex-wrap: wrap;
     }
@@ -63,14 +67,14 @@
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      padding: 5px 10px;
+      font-size: 0.8rem;
       font-weight: 500;
       color: var(--text-main);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.2s;
     }
 
@@ -96,21 +100,9 @@
 
     .divider-v {
       width: 1px;
-      height: 24px;
+      height: 20px;
       background: var(--border-color);
-      margin: 0 4px;
-    }
-
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .control-group input[type="range"] {
-      width: 100px;
+      margin: 0 2px;
     }
 
     .main-container {
@@ -118,6 +110,8 @@
       flex: 1;
       position: relative;
       overflow: hidden;
+      width: 100%;
+      height: 100%;
     }
 
     #workspace {
@@ -129,22 +123,21 @@
       background-size: 20px 20px;
       background-color: #f8fafc;
       cursor: crosshair;
+      width: 100%;
+      height: 100%;
     }
 
     canvas {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    #drawingCanvas {
-      z-index: 1;
-    }
-
-    #toolsCanvas {
-      z-index: 2;
-      pointer-events: none;
-    }
+    #drawingCanvas { z-index: 1; }
+    #toolsCanvas { z-index: 2; pointer-events: none; }
 
     .status-bar {
       position: absolute;
@@ -155,11 +148,15 @@
       padding: 6px 12px;
       border-radius: 20px;
       border: 1px solid var(--border-color);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: var(--text-muted);
       z-index: 5;
       pointer-events: none;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      max-width: 80vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tool-controls {
@@ -167,38 +164,45 @@
       bottom: 12px;
       right: 12px;
       background: var(--panel-bg);
-      padding: 8px 12px;
+      padding: 6px 12px;
       border-radius: 8px;
       border: 1px solid var(--border-color);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
       z-index: 5;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex-wrap: wrap;
     }
 
-    .tool-controls label {
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 0.8rem;
-      font-weight: 500;
       color: var(--text-muted);
+    }
+
+    .control-group input[type="range"] {
+      width: 80px;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Geometry Construction Workbench</h1>
+    <h1>Geometry Workbench</h1>
     <div class="toolbar">
       <button class="btn active" id="tool-select" onclick="setTool('select')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg> Move/Select
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg> Move
       </button>
       <button class="btn" id="tool-marker" onclick="setTool('marker')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg> Red Marker
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><path d="M12 19l7-7"/></svg> Straight Line
       </button>
       
       <div class="divider-v"></div>
 
-      <button class="btn" id="toggle-ruler" onclick="toggleInstrument('ruler')">Ruler (15cm)</button>
+      <button class="btn" id="toggle-ruler" onclick="toggleInstrument('ruler')">Ruler</button>
       <button class="btn" id="toggle-protractor" onclick="toggleInstrument('protractor')">Protractor</button>
       <button class="btn" id="toggle-setsquare45" onclick="toggleInstrument('setsquare45')">Set Square (45°)</button>
       <button class="btn" id="toggle-setsquare60" onclick="toggleInstrument('setsquare60')">Set Square (30°/60°)</button>
@@ -219,14 +223,14 @@
       <div class="status-bar" id="status">Active Tool: Select / Drag Instruments</div>
 
       <div class="tool-controls" id="instrument-controls" style="display: none;">
-        <span id="active-instrument-name" style="font-weight: 600; font-size: 0.85rem;">Instrument</span>
+        <span id="active-instrument-name" style="font-weight: 600; font-size: 0.8rem;">Instrument</span>
         <div class="control-group">
           <label>Rotate:</label>
           <input type="range" id="rotate-slider" min="0" max="360" value="0" oninput="updateActiveRotation(this.value)">
           <span id="rotate-val">0°</span>
         </div>
         <div class="control-group" id="radius-control" style="display: none;">
-          <label>Radius/Span:</label>
+          <label>Radius:</label>
           <input type="range" id="radius-slider" min="20" max="300" value="100" oninput="updateActiveRadius(this.value)">
           <span id="radius-val">100px</span>
         </div>
@@ -236,17 +240,14 @@
   </div>
 
   <script>
-    // System Constants
-    const PIXELS_PER_CM = 37.7952755906; // Standard 96 DPI pixel conversion
+    const PIXELS_PER_CM = 37.7952755906;
 
-    // Canvas Elements
     const workspace = document.getElementById('workspace');
     const drawCanvas = document.getElementById('drawingCanvas');
     const toolsCanvas = document.getElementById('toolsCanvas');
     const drawCtx = drawCanvas.getContext('2d');
     const toolsCtx = toolsCanvas.getContext('2d');
 
-    // UI Controls
     const statusEl = document.getElementById('status');
     const instControls = document.getElementById('instrument-controls');
     const instNameEl = document.getElementById('active-instrument-name');
@@ -257,54 +258,58 @@
     const radiusVal = document.getElementById('radius-val');
     const compassDrawBtn = document.getElementById('compass-draw-btn');
 
-    // State Variables
-    let currentTool = 'select'; // 'select', 'marker'
+    let currentTool = 'select';
     let isDrawingMarker = false;
-    let lastMarkerPos = null;
+    let markerStartPos = null;
 
-    // Touch Interaction State
-    let initialPinchDistance = null;
-    let initialInstrumentScale = 1;
-    let lastSingleTouchAngle = null;
-
-    // Instruments Definitions
     let activeInstrument = null;
     let isDraggingInstrument = false;
     let dragOffset = { x: 0, y: 0 };
 
+    // Multi-touch tracking variables
+    let initialPinchDistance = null;
+    let initialScale = 1;
+    let initialTouchAngle = 0;
+    let initialInstRotation = 0;
+
     const instruments = {
       ruler: { visible: false, x: 100, y: 150, rotation: 0, scale: 1, width: 15 * PIXELS_PER_CM, height: 50, type: 'ruler' },
-      protractor: { visible: false, x: 250, y: 300, rotation: 0, scale: 1, radius: 140, type: 'protractor' },
-      setsquare45: { visible: false, x: 400, y: 200, rotation: 0, scale: 1, size: 200, type: 'setsquare45' },
-      setsquare60: { visible: false, x: 550, y: 200, rotation: 0, scale: 1, width: 160, height: 277, type: 'setsquare60' },
+      protractor: { visible: false, x: 250, y: 250, rotation: 0, scale: 1, radius: 140, type: 'protractor' },
+      setsquare45: { visible: false, x: 350, y: 200, rotation: 0, scale: 1, size: 200, type: 'setsquare45' },
+      setsquare60: { visible: false, x: 500, y: 200, rotation: 0, scale: 1, width: 160, height: 277, type: 'setsquare60' },
       compass: { visible: false, x: 300, y: 250, rotation: 0, scale: 1, span: 100, type: 'compass' },
       divider: { visible: false, x: 450, y: 250, rotation: 0, scale: 1, span: 80, type: 'divider' }
     };
 
-    // Canvas Initialization
+    // Responsive Canvas Resizing with High-DPI Resolution Handling
     function resizeCanvas() {
-      const width = workspace.clientWidth;
-      const height = workspace.clientHeight;
-      
-      // Retain drawn canvas contents on resize
+      const dpr = window.devicePixelRatio || 1;
+      const rect = workspace.getBoundingClientRect();
+
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = drawCanvas.width;
       tempCanvas.height = drawCanvas.height;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(drawCanvas, 0, 0);
+      if (drawCanvas.width > 0) {
+        tempCanvas.getContext('2d').drawImage(drawCanvas, 0, 0);
+      }
 
-      drawCanvas.width = width;
-      drawCanvas.height = height;
-      toolsCanvas.width = width;
-      toolsCanvas.height = height;
+      drawCanvas.width = rect.width * dpr;
+      drawCanvas.height = rect.height * dpr;
+      toolsCanvas.width = rect.width * dpr;
+      toolsCanvas.height = rect.height * dpr;
 
-      drawCtx.drawImage(tempCanvas, 0, 0);
+      drawCtx.scale(dpr, dpr);
+      toolsCtx.scale(dpr, dpr);
+
+      if (tempCanvas.width > 0) {
+        drawCtx.drawImage(tempCanvas, 0, 0, tempCanvas.width / dpr, tempCanvas.height / dpr);
+      }
+
       renderTools();
     }
 
     window.addEventListener('resize', resizeCanvas);
 
-    // Instrument Toggle Logic
     function toggleInstrument(type) {
       instruments[type].visible = !instruments[type].visible;
       const btn = document.getElementById(`toggle-${type}`);
@@ -347,7 +352,7 @@
 
     function getInstrumentName(type) {
       switch(type) {
-        case 'ruler': return 'Ruler (15cm)';
+        case 'ruler': return 'Ruler';
         case 'protractor': return 'Protractor';
         case 'setsquare45': return 'Set Square (45°)';
         case 'setsquare60': return 'Set Square (30°/60°)';
@@ -375,24 +380,22 @@
       }
     }
 
-    // Active Tool Controls
     function setTool(tool) {
       currentTool = tool;
       document.getElementById('tool-select').classList.toggle('active', tool === 'select');
       document.getElementById('tool-marker').classList.toggle('active', tool === 'marker');
       
       statusEl.textContent = tool === 'marker' 
-        ? 'Active Tool: Red Marker (Click/touch & drag to draw freehand lines/marks)' 
-        : 'Active Tool: Select / Drag / Touch Gestures (1 finger circular motion to rotate, 2 fingers pinch to zoom)';
+        ? 'Active Tool: Red Marker (Click & drag to draw straight line)' 
+        : 'Active Tool: Select / Drag / Multi-Touch Pinch & Rotate';
     }
 
     function clearCanvas() {
-      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      drawCtx.clearRect(0, 0, workspace.clientWidth, workspace.clientHeight);
     }
 
-    // Render Instruments Overlay
     function renderTools() {
-      toolsCtx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
+      toolsCtx.clearRect(0, 0, workspace.clientWidth, workspace.clientHeight);
 
       Object.keys(instruments).forEach(key => {
         const inst = instruments[key];
@@ -403,10 +406,9 @@
         toolsCtx.rotate((inst.rotation * Math.PI) / 180);
         toolsCtx.scale(inst.scale || 1, inst.scale || 1);
 
-        // Highlight Active Instrument
         if (activeInstrument === inst) {
           toolsCtx.shadowColor = 'rgba(37, 99, 235, 0.4)';
-          toolsCtx.shadowBlur = 12;
+          toolsCtx.shadowBlur = 10;
         }
 
         switch (inst.type) {
@@ -422,19 +424,18 @@
       });
     }
 
-    // DRAWING INSTRUMENT GRAPHICS
+    // Graphic Renderers with Millimeter & Centimeter Markings
     function drawRuler(ctx, inst) {
       const w = inst.width;
       const h = inst.height;
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1;
       ctx.fillRect(0, 0, w, h);
       ctx.strokeRect(0, 0, w, h);
 
-      // Marks
-      ctx.fillStyle = '#334155';
+      ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#334155';
       ctx.font = '10px sans-serif';
       ctx.textAlign = 'center';
@@ -443,14 +444,14 @@
         const x = cm * PIXELS_PER_CM;
         ctx.beginPath();
         ctx.moveTo(x, 0);
-        ctx.lineTo(x, 15);
+        ctx.lineTo(x, 14);
         ctx.stroke();
-        ctx.fillText(cm, x, 26);
+        ctx.fillText(cm, x, 25);
 
         if (cm < 15) {
           for (let mm = 1; mm < 10; mm++) {
             const mx = x + (mm * PIXELS_PER_CM) / 10;
-            const length = mm === 5 ? 10 : 6;
+            const length = mm === 5 ? 9 : 5;
             ctx.beginPath();
             ctx.moveTo(mx, 0);
             ctx.lineTo(mx, length);
@@ -466,13 +467,12 @@
       ctx.beginPath();
       ctx.arc(0, 0, r, Math.PI, 0, false);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
       ctx.fill();
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Inner cutout
       ctx.beginPath();
       ctx.arc(0, 0, r * 0.4, Math.PI, 0, false);
       ctx.closePath();
@@ -480,19 +480,16 @@
       ctx.fill();
       ctx.stroke();
 
-      // Center crosshair
       ctx.beginPath();
       ctx.moveTo(-10, 0); ctx.lineTo(10, 0);
       ctx.moveTo(0, -10); ctx.lineTo(0, 10);
       ctx.strokeStyle = '#ef4444';
       ctx.stroke();
 
-      // Ticks & Degree Labels
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#334155';
       ctx.font = '9px sans-serif';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
 
       for (let deg = 0; deg <= 180; deg++) {
         const rad = (180 - deg) * (Math.PI / 180);
@@ -511,19 +508,14 @@
         ctx.stroke();
 
         if (isMajor) {
-          // Outer scale (0-180)
           const tx = Math.cos(rad) * (r - 20);
           const ty = -Math.sin(rad) * (r - 20);
           ctx.fillText(deg, tx, ty);
-
-          // Inner scale (180-0)
-          const tx2 = Math.cos(rad) * (r - 32);
-          const ty2 = -Math.sin(rad) * (r - 32);
-          ctx.fillText(180 - deg, tx2, ty2);
         }
       }
     }
 
+    // Set Square 45° with mm and cm scale along base and vertical edge
     function drawSetSquare45(ctx, inst) {
       const s = inst.size;
 
@@ -533,21 +525,61 @@
       ctx.lineTo(0, s);
       ctx.closePath();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
       ctx.fill();
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Inner Cutout Triangle
       ctx.beginPath();
       ctx.moveTo(s * 0.2, s * 0.2);
-      ctx.lineTo(s * 0.6, s * 0.2);
-      ctx.lineTo(s * 0.2, s * 0.6);
+      ctx.lineTo(s * 0.55, s * 0.2);
+      ctx.lineTo(s * 0.2, s * 0.55);
       ctx.closePath();
       ctx.stroke();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#334155';
+      ctx.font = '8px sans-serif';
+      ctx.textAlign = 'center';
+
+      // Horizontal edge scale (cm & mm)
+      const maxCm = Math.floor(s / PIXELS_PER_CM);
+      for (let cm = 0; cm <= maxCm; cm++) {
+        const x = cm * PIXELS_PER_CM;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 10); ctx.stroke();
+        if (cm > 0) ctx.fillText(cm, x, 18);
+
+        if (cm < maxCm) {
+          for (let mm = 1; mm < 10; mm++) {
+            const mx = x + (mm * PIXELS_PER_CM) / 10;
+            if (mx < s) {
+              const len = mm === 5 ? 7 : 4;
+              ctx.beginPath(); ctx.moveTo(mx, 0); ctx.lineTo(mx, len); ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Vertical edge scale (cm & mm)
+      for (let cm = 0; cm <= maxCm; cm++) {
+        const y = cm * PIXELS_PER_CM;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(10, y); ctx.stroke();
+        if (cm > 0) ctx.fillText(cm, 16, y + 3);
+
+        if (cm < maxCm) {
+          for (let mm = 1; mm < 10; mm++) {
+            const my = y + (mm * PIXELS_PER_CM) / 10;
+            if (my < s) {
+              const len = mm === 5 ? 7 : 4;
+              ctx.beginPath(); ctx.moveTo(0, my); ctx.lineTo(len, my); ctx.stroke();
+            }
+          }
+        }
+      }
     }
 
+    // Set Square 30°/60° with mm and cm scale along base and vertical edge
     function drawSetSquare60(ctx, inst) {
       const w = inst.width;
       const h = inst.height;
@@ -558,103 +590,107 @@
       ctx.lineTo(0, h);
       ctx.closePath();
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
       ctx.fill();
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Inner Cutout Triangle
       ctx.beginPath();
       ctx.moveTo(w * 0.2, h * 0.4);
       ctx.lineTo(w * 0.6, h * 0.8);
       ctx.lineTo(w * 0.2, h * 0.8);
       ctx.closePath();
       ctx.stroke();
+
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#334155';
+      ctx.font = '8px sans-serif';
+
+      // Vertical edge scale
+      const maxCmH = Math.floor(h / PIXELS_PER_CM);
+      for (let cm = 0; cm <= maxCmH; cm++) {
+        const y = cm * PIXELS_PER_CM;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(10, y); ctx.stroke();
+        if (cm > 0) ctx.fillText(cm, 15, y + 3);
+
+        if (cm < maxCmH) {
+          for (let mm = 1; mm < 10; mm++) {
+            const my = y + (mm * PIXELS_PER_CM) / 10;
+            if (my < h) {
+              const len = mm === 5 ? 7 : 4;
+              ctx.beginPath(); ctx.moveTo(0, my); ctx.lineTo(len, my); ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Bottom horizontal edge scale
+      const maxCmW = Math.floor(w / PIXELS_PER_CM);
+      for (let cm = 0; cm <= maxCmW; cm++) {
+        const x = cm * PIXELS_PER_CM;
+        ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x, h - 10); ctx.stroke();
+        if (cm > 0) ctx.fillText(cm, x - 3, h - 14);
+
+        if (cm < maxCmW) {
+          for (let mm = 1; mm < 10; mm++) {
+            const mx = x + (mm * PIXELS_PER_CM) / 10;
+            if (mx < w) {
+              const len = mm === 5 ? 7 : 4;
+              ctx.beginPath(); ctx.moveTo(mx, h); ctx.lineTo(mx, h - len); ctx.stroke();
+            }
+          }
+        }
+      }
     }
 
     function drawCompass(ctx, inst) {
       const span = inst.span;
 
-      // Hinge / Head
-      ctx.beginPath();
-      ctx.arc(0, -40, 8, 0, Math.PI * 2);
-      ctx.fillStyle = '#64748b';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -40, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#64748b'; ctx.fill();
 
-      // Needle Leg (Fixed Left)
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(0, -40);
-      ctx.lineTo(-span / 2, 0);
-      ctx.stroke();
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(0, -40); ctx.lineTo(-span / 2, 0); ctx.stroke();
 
-      // Pencil Leg (Adjustable Right)
       ctx.strokeStyle = '#2563eb';
-      ctx.beginPath();
-      ctx.moveTo(0, -40);
-      ctx.lineTo(span / 2, 0);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -40); ctx.lineTo(span / 2, 0); ctx.stroke();
 
-      // Steel Tip
-      ctx.beginPath();
-      ctx.arc(-span / 2, 0, 2, 0, Math.PI * 2);
-      ctx.fillStyle = '#000';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(-span / 2, 0, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#000'; ctx.fill();
 
-      // Pencil Tip
-      ctx.beginPath();
-      ctx.arc(span / 2, 0, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#dc2626';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(span / 2, 0, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#dc2626'; ctx.fill();
     }
 
     function drawDivider(ctx, inst) {
       const span = inst.span;
 
-      // Hinge
-      ctx.beginPath();
-      ctx.arc(0, -40, 8, 0, Math.PI * 2);
-      ctx.fillStyle = '#64748b';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -40, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#64748b'; ctx.fill();
 
-      // Left Leg
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(0, -40);
-      ctx.lineTo(-span / 2, 0);
-      ctx.stroke();
+      ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(0, -40); ctx.lineTo(-span / 2, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -40); ctx.lineTo(span / 2, 0); ctx.stroke();
 
-      // Right Leg
-      ctx.beginPath();
-      ctx.moveTo(0, -40);
-      ctx.lineTo(span / 2, 0);
-      ctx.stroke();
-
-      // Steel Tips
       ctx.fillStyle = '#000';
       ctx.beginPath(); ctx.arc(-span / 2, 0, 2, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(span / 2, 0, 2, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Compass Drawing Sweep
     function drawCompassArc() {
       if (!instruments.compass.visible) return;
 
       const comp = instruments.compass;
       const rad = (comp.rotation * Math.PI) / 180;
       const scale = comp.scale || 1;
-      
-      // Calculate Needle Center Position in global coordinates
+
       const needleLocalX = (-comp.span / 2) * scale;
       const needleLocalY = 0;
-      
+
       const needleGlobalX = comp.x + needleLocalX * Math.cos(rad) - needleLocalY * Math.sin(rad);
       const needleGlobalY = comp.y + needleLocalX * Math.sin(rad) + needleLocalY * Math.cos(rad);
 
-      // Draw Arc around needle point
       drawCtx.save();
       drawCtx.strokeStyle = '#2563eb';
       drawCtx.lineWidth = 1.5;
@@ -664,38 +700,31 @@
       drawCtx.restore();
     }
 
-    // Helper positions & hit test
     function getMousePos(e) {
       const rect = workspace.getBoundingClientRect();
-      return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
     function getTouchPos(touch) {
       const rect = workspace.getBoundingClientRect();
-      return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
     }
 
     function isPointInInstrument(pos, inst) {
       const dx = pos.x - inst.x;
       const dy = pos.y - inst.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const radius = 80 * (inst.scale || 1);
-      return dist < radius;
+      const hitRadius = 100 * (inst.scale || 1);
+      return dist < hitRadius;
     }
 
-    // MOUSE INTERACTION HANDLERS
+    // MOUSE EVENTS (FOR DESKTOP)
     workspace.addEventListener('mousedown', (e) => {
       const pos = getMousePos(e);
 
       if (currentTool === 'marker') {
         isDrawingMarker = true;
-        lastMarkerPos = pos;
+        markerStartPos = pos;
         return;
       }
 
@@ -719,17 +748,16 @@
     workspace.addEventListener('mousemove', (e) => {
       const pos = getMousePos(e);
 
-      if (isDrawingMarker && lastMarkerPos) {
-        drawCtx.save();
-        drawCtx.strokeStyle = '#dc2626';
-        drawCtx.lineWidth = 2.5;
-        drawCtx.lineCap = 'round';
-        drawCtx.beginPath();
-        drawCtx.moveTo(lastMarkerPos.x, lastMarkerPos.y);
-        drawCtx.lineTo(pos.x, pos.y);
-        drawCtx.stroke();
-        drawCtx.restore();
-        lastMarkerPos = pos;
+      if (isDrawingMarker && markerStartPos) {
+        renderTools();
+        toolsCtx.save();
+        toolsCtx.strokeStyle = '#dc2626';
+        toolsCtx.lineWidth = 2.5;
+        toolsCtx.beginPath();
+        toolsCtx.moveTo(markerStartPos.x, markerStartPos.y);
+        toolsCtx.lineTo(pos.x, pos.y);
+        toolsCtx.stroke();
+        toolsCtx.restore();
         return;
       }
 
@@ -740,39 +768,38 @@
       }
     });
 
-    window.addEventListener('mouseup', () => {
-      isDrawingMarker = false;
+    window.addEventListener('mouseup', (e) => {
+      if (isDrawingMarker && markerStartPos) {
+        const pos = getMousePos(e);
+        drawCtx.save();
+        drawCtx.strokeStyle = '#dc2626';
+        drawCtx.lineWidth = 2.5;
+        drawCtx.beginPath();
+        drawCtx.moveTo(markerStartPos.x, markerStartPos.y);
+        drawCtx.lineTo(pos.x, pos.y);
+        drawCtx.stroke();
+        drawCtx.restore();
+
+        isDrawingMarker = false;
+        markerStartPos = null;
+        renderTools();
+      }
+
       isDraggingInstrument = false;
-      lastMarkerPos = null;
     });
 
-    // TOUCH GESTURE HANDLERS (CIRCULAR ROTATION & 2-FINGER PINCH ZOOM)
-    function getTouchDistance(t1, t2) {
-      const dx = t1.clientX - t2.clientX;
-      const dy = t1.clientY - t2.clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
+    // TOUCH EVENTS (ANY INSTRUMENT TOUCH + SECOND FINGER ROTATE + PINCH ZOOM)
     workspace.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 2) {
-        // Two-finger touch: Initialize zoom / pinch gesture
-        if (activeInstrument) {
-          initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
-          initialInstrumentScale = activeInstrument.scale || 1;
-        }
-        isDraggingInstrument = false;
-        isDrawingMarker = false;
-        lastSingleTouchAngle = null;
-      } else if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const pos = getTouchPos(touch);
-
-        if (currentTool === 'marker') {
+      if (currentTool === 'marker') {
+        if (e.touches.length === 1) {
           isDrawingMarker = true;
-          lastMarkerPos = pos;
-          return;
+          markerStartPos = getTouchPos(e.touches[0]);
         }
+        return;
+      }
 
+      if (e.touches.length === 1) {
+        const pos = getTouchPos(e.touches[0]);
         let clickedInst = null;
         Object.keys(instruments).forEach(key => {
           const inst = instruments[key];
@@ -785,112 +812,127 @@
           setActiveInstrument(clickedInst);
           isDraggingInstrument = true;
           dragOffset = { x: pos.x - clickedInst.x, y: pos.y - clickedInst.y };
-          
-          // Store initial angle for single-finger circular rotation gesture
-          const dx = pos.x - clickedInst.x;
-          const dy = pos.y - clickedInst.y;
-          lastSingleTouchAngle = Math.atan2(dy, dx);
         } else {
           setActiveInstrument(null);
-          lastSingleTouchAngle = null;
         }
+      } else if (e.touches.length === 2 && activeInstrument) {
+        // Multi-touch active on instrument: Pinch scale & 2nd finger rotation anywhere
+        isDraggingInstrument = false;
+
+        const p1 = getTouchPos(e.touches[0]);
+        const p2 = getTouchPos(e.touches[1]);
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+
+        initialPinchDistance = Math.sqrt(dx * dx + dy * dy);
+        initialScale = activeInstrument.scale || 1;
+
+        initialTouchAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+        initialInstRotation = activeInstrument.rotation || 0;
       }
     }, { passive: false });
 
     workspace.addEventListener('touchmove', (e) => {
-      e.preventDefault(); // Prevent page scrolling during gestures
+      e.preventDefault();
+
+      if (isDrawingMarker && markerStartPos && e.touches.length === 1) {
+        const pos = getTouchPos(e.touches[0]);
+        renderTools();
+        toolsCtx.save();
+        toolsCtx.strokeStyle = '#dc2626';
+        toolsCtx.lineWidth = 2.5;
+        toolsCtx.beginPath();
+        toolsCtx.moveTo(markerStartPos.x, markerStartPos.y);
+        toolsCtx.lineTo(pos.x, pos.y);
+        toolsCtx.stroke();
+        toolsCtx.restore();
+        return;
+      }
 
       if (e.touches.length === 2 && activeInstrument) {
-        // Two fingers: Handle Zoom (Scale)
-        const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        const p1 = getTouchPos(e.touches[0]);
+        const p2 = getTouchPos(e.touches[1]);
+
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+
+        // Pinch Zoom / Scale calculation for all instruments
+        const currentDistance = Math.sqrt(dx * dx + dy * dy);
         if (initialPinchDistance && initialPinchDistance > 0) {
           const scaleFactor = currentDistance / initialPinchDistance;
-          let newScale = initialInstrumentScale * scaleFactor;
-          // Clamp scale between 0.4 and 3.0 for usable display
-          newScale = Math.min(Math.max(newScale, 0.4), 3.0);
+          let newScale = initialScale * scaleFactor;
+          newScale = Math.min(Math.max(newScale, 0.3), 3.5);
           activeInstrument.scale = newScale;
-          renderTools();
-        }
-      } else if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const pos = getTouchPos(touch);
-
-        if (isDrawingMarker && lastMarkerPos) {
-          drawCtx.save();
-          drawCtx.strokeStyle = '#dc2626';
-          drawCtx.lineWidth = 2.5;
-          drawCtx.lineCap = 'round';
-          drawCtx.beginPath();
-          drawCtx.moveTo(lastMarkerPos.x, lastMarkerPos.y);
-          drawCtx.lineTo(pos.x, pos.y);
-          drawCtx.stroke();
-          drawCtx.restore();
-          lastMarkerPos = pos;
-          return;
         }
 
-        if (isDraggingInstrument && activeInstrument) {
-          // Check circular motion distance relative to instrument center
-          const dx = pos.x - activeInstrument.x;
-          const dy = pos.y - activeInstrument.y;
-          const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+        // 2-Finger Rotation calculation (1 finger on/near instrument, 2nd anywhere on screen)
+        const currentAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+        const angleDiff = currentAngle - initialTouchAngle;
+        updateActiveRotation(initialInstRotation + angleDiff);
 
-          // If finger moves in an outer orbit around instrument center, rotate it
-          if (distFromCenter > 25 && lastSingleTouchAngle !== null) {
-            const currentAngle = Math.atan2(dy, dx);
-            let angleDiff = (currentAngle - lastSingleTouchAngle) * (180 / Math.PI);
-
-            // Handle wrap-around transitions [-PI, PI]
-            if (angleDiff > 180) angleDiff -= 360;
-            if (angleDiff < -180) angleDiff += 360;
-
-            updateActiveRotation(activeInstrument.rotation + angleDiff);
-            lastSingleTouchAngle = currentAngle;
-          }
-
-          // Move instrument center
-          activeInstrument.x = pos.x - dragOffset.x;
-          activeInstrument.y = pos.y - dragOffset.y;
-          renderTools();
-        }
+        renderTools();
+      } else if (e.touches.length === 1 && isDraggingInstrument && activeInstrument) {
+        const pos = getTouchPos(e.touches[0]);
+        activeInstrument.x = pos.x - dragOffset.x;
+        activeInstrument.y = pos.y - dragOffset.y;
+        renderTools();
       }
     }, { passive: false });
 
     workspace.addEventListener('touchend', (e) => {
+      if (isDrawingMarker && markerStartPos) {
+        if (e.changedTouches.length > 0) {
+          const pos = getTouchPos(e.changedTouches[0]);
+          drawCtx.save();
+          drawCtx.strokeStyle = '#dc2626';
+          drawCtx.lineWidth = 2.5;
+          drawCtx.beginPath();
+          drawCtx.moveTo(markerStartPos.x, markerStartPos.y);
+          drawCtx.lineTo(pos.x, pos.y);
+          drawCtx.stroke();
+          drawCtx.restore();
+        }
+
+        isDrawingMarker = false;
+        markerStartPos = null;
+        renderTools();
+      }
+
       if (e.touches.length < 2) {
         initialPinchDistance = null;
       }
       if (e.touches.length === 0) {
-        isDrawingMarker = false;
         isDraggingInstrument = false;
-        lastMarkerPos = null;
-        lastSingleTouchAngle = null;
       }
     });
 
-    // Initial setup setup default baseline segment
     function initDefaults() {
       resizeCanvas();
-      
-      // Draw initial reference line AB
+
+      // Sample base segment AB
+      const w = workspace.clientWidth;
+      const h = workspace.clientHeight;
+      const startX = Math.max(50, w * 0.2);
+      const endX = Math.min(w - 50, w * 0.7);
+      const lineY = h * 0.6;
+
       drawCtx.strokeStyle = '#475569';
       drawCtx.lineWidth = 2;
       drawCtx.beginPath();
-      drawCtx.moveTo(150, 400);
-      drawCtx.lineTo(450, 400);
+      drawCtx.moveTo(startX, lineY);
+      drawCtx.lineTo(endX, lineY);
       drawCtx.stroke();
 
-      // Points A and B
       drawCtx.fillStyle = '#0f172a';
       drawCtx.font = '12px sans-serif';
       
-      drawCtx.beginPath(); drawCtx.arc(150, 400, 3, 0, Math.PI*2); drawCtx.fill();
-      drawCtx.fillText('A', 145, 420);
+      drawCtx.beginPath(); drawCtx.arc(startX, lineY, 3, 0, Math.PI*2); drawCtx.fill();
+      drawCtx.fillText('A', startX - 10, lineY + 20);
 
-      drawCtx.beginPath(); drawCtx.arc(450, 400, 3, 0, Math.PI*2); drawCtx.fill();
-      drawCtx.fillText('B', 450, 420);
+      drawCtx.beginPath(); drawCtx.arc(endX, lineY, 3, 0, Math.PI*2); drawCtx.fill();
+      drawCtx.fillText('B', endX + 5, lineY + 20);
 
-      // Deploy Protractor and Ruler by default
       toggleInstrument('ruler');
       toggleInstrument('protractor');
     }
