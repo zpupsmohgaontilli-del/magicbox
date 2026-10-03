@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magnetism Interactive Simulation - चुंबकत्व परस्परसंवादी प्रयोगाचा मार्गदर्शक</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-blue: #38bdf8;
+      --accent-green: #4ade80;
+      --accent-red: #ef4444;
+      --accent-yellow: #facc15;
+      --text-light: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lang-btn {
+      background: #334155;
+      color: var(--accent-yellow);
+      border: 1px solid var(--accent-yellow);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn:hover {
+      background: var(--accent-yellow);
+      color: #000;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 1000px;
+      margin-bottom: 15px;
+    }
+
+    .tab-btn {
+      background: var(--card-bg);
+      color: var(--text-dim);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background: var(--accent-blue);
+      color: var(--bg-dark);
+      border-color: var(--accent-blue);
+    }
+
+    .sim-container {
+      width: 100%;
+      max-width: 1000px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    canvas {
+      background: #090d16;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      touch-action: none;
+      cursor: crosshair;
+      width: 100%;
+      max-width: 800px;
+      height: 380px;
+    }
+
+    .controls-panel {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px 18px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent-blue);
+      cursor: pointer;
+    }
+
+    .btn {
+      background: var(--accent-blue);
+      color: var(--bg-dark);
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .info-box {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(56, 189, 248, 0.1);
+      border-left: 4px solid var(--accent-blue);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 id="app-title">🧲 Magnetism Virtual Lab / चुंबकत्व प्रयोगशाळा</h1>
+    <button class="lang-btn" onclick="toggleLanguage()">Language: EN / मराठी</button>
+  </header>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchModule(0)">1. Suspended Magnet / टांगलेला चुंबक</button>
+    <button class="tab-btn" onclick="switchModule(1)">2. Attracting Pins / टाचण्या आकर्षित करणे</button>
+    <button class="tab-btn" onclick="switchModule(2)">3. Magnetic Compass / होकायंत्र</button>
+    <button class="tab-btn" onclick="switchModule(3)">4. AC Generator / जनरेटर</button>
+    <button class="tab-btn" onclick="switchModule(4)">5. Maglev Train / मॅग्लेव्ह ट्रेन</button>
+  </div>
+
+  <div class="sim-container">
+    <canvas id="simCanvas" width="800" height="380"></canvas>
+
+    <div class="controls-panel" id="controls">
+      <!-- Dynamic Controls injected via JavaScript -->
+    </div>
+
+    <div class="info-box" id="infoBox">
+      <!-- Explanatory Text injected via JavaScript -->
+    </div>
+  </div>
+
+  <footer>
+    Interactive Science Physics Simulation • विज्ञान प्रात्यक्षिक
+  </footer>
+
+  <script>
+    let currentLang = 'en'; // 'en' or 'mr'
+    let currentModule = 0;
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Language Data Dictionary
+    const contentData = [
+      {
+        title: { en: "1. Freely Suspended Bar Magnet", mr: "१. हवेत मोकळा टांगलेला पट्टी चुंबक" },
+        info: {
+          en: "A freely suspended bar magnet always aligns itself in the Geographic North-South direction. Rotate the magnet using the slider and see how it settles back.",
+          mr: "हवेत मोकळा टांगलेला चुंबक नेहमी भौगोलिक उत्तर-दक्षिण दिशेतच स्थिर राहतो. स्लायडर वापरून चुंबक फिरवा आणि तो कसा मूळ स्थितीत येतो ते पहा."
+        },
+        controls: `
+          <div class="control-group">
+            <label id="lbl-angle">${currentLang === 'en' ? 'Rotate Magnet:' : 'चुंबक फिरवा:'}</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="45" oninput="m1_setAngle(this.value)">
+          </div>
+          <button class="btn" onclick="m1_release()">${currentLang === 'en' ? 'Release / मोकळे सोडा' : 'मोकळे सोडा'}</button>
+        `
+      },
+      {
+        title: { en: "2. Attracting Iron Pins", mr: "२. लोखंडी टाचण्या आकर्षित करणे" },
+        info: {
+          en: "Move the bar magnet close to the iron pins using your mouse or touch. Notice that magnetic force is strongest at the poles (ends) of the magnet.",
+          mr: "माऊस किंवा स्पर्शाने चुंबक टाचण्यांजवळ न्या. चुंबकाचे आकर्षण बल त्याच्या दोन्ही टोकांवर (ध्रुवांवर) सर्वात जास्त असते हे लक्षात घ्या."
+        },
+        controls: `
+          <button class="btn" onclick="m2_reset()">${currentLang === 'en' ? 'Reset Pins / टाचण्या पूर्ववत करा' : 'टाचण्या पूर्ववत करा'}</button>
+          <span style="color: var(--text-dim); font-size: 0.85rem;">${currentLang === 'en' ? 'Drag magnet near pins' : 'चुंबक टाचण्यांजवळ ओढा'}</span>
+        `
+      },
+      {
+        title: { en: "3. Magnetic Compass", mr: "३. चुंबकीय होकायंत्र (Magnetic Compass)" },
+        info: {
+          en: "Move the external bar magnet near the magnetic compass needle. Like poles repel each other, while opposite poles attract.",
+          mr: "चुंबकीय सुईजवळ बाहेरील पट्टी चुंबक नेऊन पहा. सजातीय ध्रुव एकमेकांना दूर ढकलतात (प्रतिकर्षण) आणि विजातीय ध्रुव आकर्षित होतात."
+        },
+        controls: `
+          <div class="control-group">
+            <label>${currentLang === 'en' ? 'Rotate External Magnet:' : 'बाह्य चुंबक फिरवा:'}</label>
+            <input type="range" id="compMagAngle" min="0" max="360" value="0" oninput="m3_setAngle(this.value)">
+          </div>
+        `
+      },
+      {
+        title: { en: "4. Simple AC Electric Generator", mr: "४. साधा जनरेटर (Simple Generator)" },
+        info: {
+          en: "Rotating a coil within a magnetic field induces an electric current (Faraday's Law of Electromagnetic Induction), lighting up the connected bulb.",
+          mr: "चुंबकीय क्षेत्रात तांब्याची गुंडाळी (Coil) फिरवल्यास त्यात विद्युत प्रवाह निर्माण होतो (फॅराडेचा विद्युतचुंबकीय प्रेरणाचा नियम), ज्यामुळे दिवा लागतो."
+        },
+        controls: `
+          <div class="control-group">
+            <label>${currentLang === 'en' ? 'Generator Speed:' : 'फिरवण्याचा वेग:'}</label>
+            <input type="range" id="genSpeed" min="0" max="100" value="20" oninput="m4_setSpeed(this.value)">
+          </div>
+          <button class="btn" id="genToggleBtn" onclick="m4_toggle()">${currentLang === 'en' ? 'Start/Stop' : 'शुरू/बंद'}</button>
+        `
+      },
+      {
+        title: { en: "5. Maglev Train (Magnetic Levitation)", mr: "५. मॅग्लेव्ह ट्रेन (Magnetic Levitation Train)" },
+        info: {
+          en: "Maglev trains use the principle of magnetic repulsion (like poles repel) to float above the track, completely eliminating friction.",
+          mr: "मॅग्लेव्ह ट्रेन चुंबकीय प्रतिकर्षणाच्या (सजातीय ध्रुव एकमेकांना दूर ढकलतात) तत्त्वावर रुळांवर हवेत तरंगते, ज्यामुळे घर्षण पूर्णपणे संपते."
+        },
+        controls: `
+          <div class="control-group">
+            <label>${currentLang === 'en' ? 'Electromagnet Power:' : 'इलेक्ट्रोमॅग्नेट पॉवर:'}</label>
+            <input type="range" id="magPower" min="0" max="100" value="0" oninput="m5_setPower(this.value)">
+          </div>
+          <div class="control-group">
+            <label>${currentLang === 'en' ? 'Forward Thrust:' : 'पुढे जाण्याचा वेग:'}</label>
+            <input type="range" id="trainSpeed" min="0" max="100" value="0" oninput="m5_setSpeed(this.value)">
+          </div>
+        `
+      }
+    ];
+
+    // Module States
+    // Module 1: Suspended
+    let m1_angle = 45;
+    let m1_targetAngle = 0; // Geographic North = 0 deg (Upwards/North)
+    let m1_isReleased = false;
+
+    // Module 2: Pins
+    let m2_magnet = { x: 400, y: 100, w: 140, h: 40 };
+    let m2_pins = [];
+    let m2_isDragging = false;
+
+    // Module 3: Compass
+    let m3_extMagnetAngle = 0;
+    let m3_needleAngle = 0;
+
+    // Module 4: Generator
+    let m4_rotation = 0;
+    let m4_speed = 0.05;
+    let m4_running = true;
+
+    // Module 5: Maglev
+    let m5_power = 0;
+    let m5_speed = 0;
+    let m5_trainX = 100;
+    let m5_trainY = 240; // Base resting level on tracks
+
+    // Mouse Interaction Handling for Canvas
+    let mouse = { x: 0, y: 0 };
+
+    canvas.addEventListener('mousedown', (e) => handlePointerDown(e));
+    canvas.addEventListener('mousemove', (e) => handlePointerMove(e));
+    canvas.addEventListener('mouseup', () => handlePointerUp());
+    canvas.addEventListener('touchstart', (e) => handlePointerDown(e.touches[0]));
+    canvas.addEventListener('touchmove', (e) => handlePointerMove(e.touches[0]));
+    canvas.addEventListener('touchend', () => handlePointerUp());
+
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height)
+      };
+    }
+
+    function handlePointerDown(e) {
+      const p = getCanvasCoords(e);
+      if (currentModule === 1) { // Attracting Pins
+        if (p.x > m2_magnet.x - 80 && p.x < m2_magnet.x + 80 &&
+            p.y > m2_magnet.y - 30 && p.y < m2_magnet.y + 30) {
+          m2_isDragging = true;
+        }
+      }
+    }
+
+    function handlePointerMove(e) {
+      const p = getCanvasCoords(e);
+      mouse.x = p.x;
+      mouse.y = p.y;
+      if (currentModule === 1 && m2_isDragging) {
+        m2_magnet.x = p.x;
+        m2_magnet.y = p.y;
+      }
+    }
+
+    function handlePointerUp() {
+      m2_isDragging = false;
+    }
+
+    function switchModule(index) {
+      currentModule = index;
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+      updateUI();
+      if (index === 1) m2_reset();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'mr' : 'en';
+      updateUI();
+    }
+
+    function updateUI() {
+      const data = contentData[currentModule];
+      document.getElementById('infoBox').innerHTML = `<strong>${data.title[currentLang]}</strong><br>${data.info[currentLang]}`;
+      document.getElementById('controls').innerHTML = data.controls;
+    }
+
+    // Module 1 Functions
+    function m1_setAngle(val) {
+      m1_angle = parseFloat(val);
+      m1_isReleased = false;
+    }
+    function m1_release() {
+      m1_isReleased = true;
+    }
+
+    // Module 2 Functions
+    function m2_reset() {
+      m2_magnet = { x: 400, y: 100, w: 140, h: 40 };
+      m2_pins = [];
+      for (let i = 0; i < 25; i++) {
+        m2_pins.push({
+          x: 200 + Math.random() * 400,
+          y: 280 + Math.random() * 50,
+          vx: 0,
+          vy: 0,
+          attached: false,
+          offset: { x: 0, y: 0 }
+        });
+      }
+    }
+
+    // Module 3 Functions
+    function m3_setAngle(val) {
+      m3_extMagnetAngle = (parseFloat(val) * Math.PI) / 180;
+    }
+
+    // Module 4 Functions
+    function m4_setSpeed(val) {
+      m4_speed = (parseFloat(val) / 100) * 0.25;
+    }
+    function m4_toggle() {
+      m4_running = !m4_running;
+    }
+
+    // Module 5 Functions
+    function m5_setPower(val) {
+      m5_power = parseFloat(val);
+    }
+    function m5_setSpeed(val) {
+      m5_speed = parseFloat(val);
+    }
+
+    // --- DRAWING & RENDER LOOP ---
+
+    function drawBarMagnet(x, y, width, height, angle = 0, labelN = "N", labelS = "S") {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+
+      const halfW = width / 2;
+      const halfH = height / 2;
+
+      // North Pole (Red)
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(-halfW, -halfH, halfW, height);
+
+      // South Pole (Blue)
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(0, -halfH, halfW, height);
+
+      // Border & Divider
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-halfW, -halfH, width, height);
+      ctx.beginPath();
+      ctx.moveTo(0, -halfH);
+      ctx.lineTo(0, halfH);
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(labelN, -halfW / 2, 0);
+      ctx.fillText(labelS, halfW / 2, 0);
+
+      ctx.restore();
+    }
+
+    function renderModule1() {
+      // Background Stand & String
+      ctx.strokeStyle = "#64748b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(400, 30);
+      ctx.lineTo(400, 160);
+      ctx.stroke();
+
+      // Stand Base
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(300, 20, 200, 10);
+
+      // Smooth Physics return to Geographic North (Angle = -90 deg in Canvas space)
+      if (m1_isReleased) {
+        let target = -90; // Upwards on canvas corresponds to North
+        let diff = target - m1_angle;
+        m1_angle += diff * 0.05; // Ease towards north
+        document.getElementById('angleSlider').value = (m1_angle + 360) % 360;
+      }
+
+      let rad = (m1_angle * Math.PI) / 180;
+      drawBarMagnet(400, 160, 160, 36, rad, "N", "S");
+
+      // Compass Direction Indicator
+      ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.beginPath();
+      ctx.arc(100, 100, 50, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#4ade80";
+      ctx.font = "bold 14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("N (उत्तर)", 100, 65);
+      ctx.fillText("S (दक्षिण)", 100, 145);
+      ctx.fillText("W", 60, 105);
+      ctx.fillText("E", 140, 105);
+    }
+
+    function renderModule2() {
+      // Draw Pins
+      m2_pins.forEach(pin => {
+        if (!pin.attached) {
+          // Physics: Check distance to magnet poles
+          let rad = 0; // Horizontal magnet
+          let poleN = { x: m2_magnet.x - 50, y: m2_magnet.y };
+          let poleS = { x: m2_magnet.x + 50, y: m2_magnet.y };
+
+          let distN = Math.hypot(pin.x - poleN.x, pin.y - poleN.y);
+          let distS = Math.hypot(pin.x - poleS.x, pin.y - poleS.y);
+          let minDist = Math.min(distN, distS);
+
+          if (minDist < 70) {
+            pin.attached = true;
+            let targetPole = distN < distS ? poleN : poleS;
+            pin.offset = { x: pin.x - targetPole.x, y: pin.y - targetPole.y };
+          }
+        } else {
+          // Attached to magnet
+          pin.x = m2_magnet.x + pin.offset.x;
+          pin.y = m2_magnet.y + pin.offset.y;
+        }
+
+        // Draw Pin (Metal Needle look)
+        ctx.save();
+        ctx.translate(pin.x, pin.y);
+        ctx.fillStyle = "#cbd5e1";
+        ctx.fillRect(-2, -10, 4, 20);
+        ctx.beginPath();
+        ctx.arc(0, -10, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#94a3b8";
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Draw Magnet
+      drawBarMagnet(m2_magnet.x, m2_magnet.y, m2_magnet.w, m2_magnet.h, 0, "N", "S");
+    }
+
+    function renderModule3() {
+      // Center Compass Dial
+      const cx = 400, cy = 190;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 90, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Cardinal Points
+      ctx.fillStyle = "#facc15";
+      ctx.font = "bold 14px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("N", cx, cy - 70);
+      ctx.fillText("S", cx, cy + 75);
+      ctx.fillText("E", cx + 75, cy + 5);
+      ctx.fillText("W", cx - 75, cy + 5);
+
+      // External Magnet Positioned around compass
+      let extX = cx + Math.cos(m3_extMagnetAngle) * 180;
+      let extY = cy + Math.sin(m3_extMagnetAngle) * 180;
+      drawBarMagnet(extX, extY, 120, 30, m3_extMagnetAngle + Math.PI / 2, "N", "S");
+
+      // Calculate Compass Needle Orientation (Attracted to external S-pole/N-pole)
+      // North pole of compass needle points to S-pole of external magnet
+      let extSouthX = extX + Math.cos(m3_extMagnetAngle + Math.PI / 2) * 30;
+      let extSouthY = extY + Math.sin(m3_extMagnetAngle + Math.PI / 2) * 30;
+
+      let targetNeedleAngle = Math.atan2(extSouthY - cy, extSouthX - cx);
+      m3_needleAngle += (targetNeedleAngle - m3_needleAngle) * 0.1; // Smooth needle movement
+
+      // Draw Compass Needle
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(m3_needleAngle);
+
+      // North Pointer (Red)
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(60, -8);
+      ctx.lineTo(60, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      // South Pointer (Blue)
+      ctx.fillStyle = "#3b82f6";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-60, -8);
+      ctx.lineTo(-60, 8);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function renderModule4() {
+      // Draw Stationary Field Magnets (N and S)
+      drawBarMagnet(220, 190, 100, 120, 0, "N", "");
+      drawBarMagnet(580, 190, 100, 120, 0, "", "S");
+
+      // Magnetic Field Lines (Dotted)
+      ctx.strokeStyle = "rgba(250, 204, 21, 0.2)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 6]);
+      for (let y = 140; y <= 240; y += 20) {
+        ctx.beginPath();
+        ctx.moveTo(270, y);
+        ctx.lineTo(530, y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Rotating Wire Coil
+      if (m4_running) m4_rotation += m4_speed;
+
+      ctx.save();
+      ctx.translate(400, 190);
+      let scaleX = Math.cos(m4_rotation); // Simulate 3D rotation
+
+      ctx.strokeStyle = "#f97316"; // Copper wire color
+      ctx.lineWidth = 5;
+      ctx.strokeRect(-80 * scaleX, -50, 160 * scaleX, 100);
+      ctx.restore();
+
+      // Bulb and Circuit Connections
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(400, 240);
+      ctx.lineTo(400, 320);
+      ctx.lineTo(350, 320);
+      ctx.moveTo(400, 240);
+      ctx.lineTo(400, 320);
+      ctx.lineTo(450, 320);
+      ctx.stroke();
+
+      // Light Bulb Logic
+      let currentIntensity = Math.abs(Math.sin(m4_rotation)) * (m4_speed / 0.25);
+      
+      ctx.save();
+      ctx.translate(400, 320);
+      // Glow effect
+      if (currentIntensity > 0.05) {
+        let glowRadius = 10 + currentIntensity * 35;
+        let radGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, glowRadius);
+        radGrad.addColorStop(0, "rgba(250, 204, 21, 1)");
+        radGrad.addColorStop(1, "rgba(250, 204, 21, 0)");
+        ctx.fillStyle = radGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = currentIntensity > 0.1 ? "#facc15" : "#475569";
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function renderModule5() {
+      // Maglev Track Base
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(50, 280, 700, 20);
+
+      // Track Magnets (Electromagnets along track - N-pole facing UP)
+      for (let x = 80; x < 750; x += 80) {
+        ctx.fillStyle = m5_power > 0 ? "#ef4444" : "#64748b";
+        ctx.fillRect(x, 260, 50, 20);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("N", x + 25, 274);
+      }
+
+      // Physics: Train Hover Height based on Power (Levitation)
+      let hoverHeight = (m5_power / 100) * 35; // Hover up to 35px
+      let targetY = 230 - hoverHeight;
+      m5_trainY += (targetY - m5_trainY) * 0.1;
+
+      // Physics: Train Speed / Movement
+      if (m5_power > 10) { // Levitation required to move frictionless
+        m5_trainX += (m5_speed / 100) * 8;
+        if (m5_trainX > 750) m5_trainX = -150;
+      }
+
+      // Train Body
+      ctx.save();
+      ctx.translate(m5_trainX, m5_trainY);
+
+      // Aerodynamic Train Frame
+      ctx.fillStyle = "#0284c7";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(140, 0);
+      ctx.quadraticCurveTo(180, 10, 190, 40);
+      ctx.lineTo(0, 40);
+      ctx.closePath();
+      ctx.fill();
+
+      // Train Windows
+      ctx.fillStyle = "#e0f2fe";
+      for (let wx = 20; wx < 130; wx += 25) {
+        ctx.fillRect(wx, 10, 18, 12);
+      }
+
+      // Train Bottom Magnets (N-Pole facing DOWN to cause Repulsion)
+      for (let mx = 15; mx < 160; mx += 50) {
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(mx, 40, 30, 12);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("N", mx + 15, 50);
+      }
+
+      ctx.restore();
+
+      // Repulsion Field Glow Lines (if active hover)
+      if (m5_power > 10) {
+        ctx.strokeStyle = "rgba(239, 68, 68, " + (m5_power / 100) + ")";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(50, 255);
+        ctx.lineTo(750, 255);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+
+    // Main Animation Loop
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      switch (currentModule) {
+        case 0: renderModule1(); break;
+        case 1: renderModule2(); break;
+        case 2: renderModule3(); break;
+        case 3: renderModule4(); break;
+        case 4: renderModule5(); break;
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // Initialize
+    updateUI();
+    animate();
+  </script>
+</body>
+</html>
