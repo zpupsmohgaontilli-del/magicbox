@@ -14,5 +14,13 @@
     "desc": "सपाट आरसा, आपाती किरण आणि परावर्तित कोन तपासा.",
     "icon": "fa-solid fa-lightbulb",
     "url": "science/light.html"
+  },
+  {
+    "id": "photosynthesis",
+    "category": "science",
+    "title": "प्रकाशसंश्लेषण (Photosynthesis)",
+    "desc": "सूर्यप्रकाश, क्षार व पाणी यांचा प्रकाशसंश्लेषणावर होणारा परिणाम तपासा.",
+    "icon": "fa-solid fa-sunlight",
+    "url": "science/photosynthesis.html"
   }
 ]
