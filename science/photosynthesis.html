@@ -469,6 +469,11 @@
     }
   };
 
+  function toStandardNumber(input) {
+    const devanagariDigits = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+    return String(input).replace(/[०-९]/g, d => devanagariDigits.indexOf(d));
+  }
+
   let hasCelebrated = false;
 
   function showPart(key) {
@@ -477,13 +482,13 @@
   }
 
   function cookLive() {
-    const sun = parseInt(document.getElementById('rng-sun').value);
-    const air = parseInt(document.getElementById('rng-air').value);
-    const water = parseInt(document.getElementById('rng-water').value);
+    const sun = parseInt(toStandardNumber(document.getElementById('rng-sun').value), 10);
+    const air = parseInt(toStandardNumber(document.getElementById('rng-air').value), 10);
+    const water = parseInt(toStandardNumber(document.getElementById('rng-water').value), 10);
 
-    document.getElementById('txt-sun').textContent = sun + '%';
-    document.getElementById('txt-air').textContent = air + '%';
-    document.getElementById('txt-water').textContent = water + '%';
+    document.getElementById('txt-sun').textContent = toStandardNumber(sun) + '%';
+    document.getElementById('txt-air').textContent = toStandardNumber(air) + '%';
+    document.getElementById('txt-water').textContent = toStandardNumber(water) + '%';
 
     const lowest = Math.min(sun, air, water);
     const meter = document.getElementById('meter');
