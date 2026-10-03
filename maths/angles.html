@@ -22,6 +22,7 @@
       margin: 0;
       padding: 0;
       user-select: none;
+      touch-action: none;
     }
 
     body {
@@ -261,18 +262,23 @@
     let isDrawingMarker = false;
     let lastMarkerPos = null;
 
+    // Touch Interaction State
+    let initialPinchDistance = null;
+    let initialInstrumentScale = 1;
+    let lastSingleTouchAngle = null;
+
     // Instruments Definitions
     let activeInstrument = null;
     let isDraggingInstrument = false;
     let dragOffset = { x: 0, y: 0 };
 
     const instruments = {
-      ruler: { visible: false, x: 100, y: 150, rotation: 0, width: 15 * PIXELS_PER_CM, height: 50, type: 'ruler' },
-      protractor: { visible: false, x: 250, y: 300, rotation: 0, radius: 140, type: 'protractor' },
-      setsquare45: { visible: false, x: 400, y: 200, rotation: 0, size: 200, type: 'setsquare45' },
-      setsquare60: { visible: false, x: 550, y: 200, rotation: 0, width: 160, height: 277, type: 'setsquare60' },
-      compass: { visible: false, x: 300, y: 250, rotation: 0, span: 100, type: 'compass' },
-      divider: { visible: false, x: 450, y: 250, rotation: 0, span: 80, type: 'divider' }
+      ruler: { visible: false, x: 100, y: 150, rotation: 0, scale: 1, width: 15 * PIXELS_PER_CM, height: 50, type: 'ruler' },
+      protractor: { visible: false, x: 250, y: 300, rotation: 0, scale: 1, radius: 140, type: 'protractor' },
+      setsquare45: { visible: false, x: 400, y: 200, rotation: 0, scale: 1, size: 200, type: 'setsquare45' },
+      setsquare60: { visible: false, x: 550, y: 200, rotation: 0, scale: 1, width: 160, height: 277, type: 'setsquare60' },
+      compass: { visible: false, x: 300, y: 250, rotation: 0, scale: 1, span: 100, type: 'compass' },
+      divider: { visible: false, x: 450, y: 250, rotation: 0, scale: 1, span: 80, type: 'divider' }
     };
 
     // Canvas Initialization
@@ -353,8 +359,10 @@
 
     function updateActiveRotation(deg) {
       if (activeInstrument) {
-        activeInstrument.rotation = parseFloat(deg);
-        rotateVal.textContent = `${Math.round(deg)}°`;
+        let normDeg = ((deg % 360) + 360) % 360;
+        activeInstrument.rotation = normDeg;
+        rotateSlider.value = normDeg;
+        rotateVal.textContent = `${Math.round(normDeg)}°`;
         renderTools();
       }
     }
@@ -374,8 +382,8 @@
       document.getElementById('tool-marker').classList.toggle('active', tool === 'marker');
       
       statusEl.textContent = tool === 'marker' 
-        ? 'Active Tool: Red Marker (Click & drag to draw freehand lines/marks)' 
-        : 'Active Tool: Select / Drag Instruments';
+        ? 'Active Tool: Red Marker (Click/touch & drag to draw freehand lines/marks)' 
+        : 'Active Tool: Select / Drag / Touch Gestures (1 finger circular motion to rotate, 2 fingers pinch to zoom)';
     }
 
     function clearCanvas() {
@@ -393,6 +401,7 @@
         toolsCtx.save();
         toolsCtx.translate(inst.x, inst.y);
         toolsCtx.rotate((inst.rotation * Math.PI) / 180);
+        toolsCtx.scale(inst.scale || 1, inst.scale || 1);
 
         // Highlight Active Instrument
         if (activeInstrument === inst) {
@@ -636,9 +645,10 @@
 
       const comp = instruments.compass;
       const rad = (comp.rotation * Math.PI) / 180;
+      const scale = comp.scale || 1;
       
       // Calculate Needle Center Position in global coordinates
-      const needleLocalX = -comp.span / 2;
+      const needleLocalX = (-comp.span / 2) * scale;
       const needleLocalY = 0;
       
       const needleGlobalX = comp.x + needleLocalX * Math.cos(rad) - needleLocalY * Math.sin(rad);
@@ -649,12 +659,12 @@
       drawCtx.strokeStyle = '#2563eb';
       drawCtx.lineWidth = 1.5;
       drawCtx.beginPath();
-      drawCtx.arc(needleGlobalX, needleGlobalY, comp.span, rad - 0.5, rad + 0.5);
+      drawCtx.arc(needleGlobalX, needleGlobalY, comp.span * scale, rad - 0.5, rad + 0.5);
       drawCtx.stroke();
       drawCtx.restore();
     }
 
-    // MOUSE & DRAG INTERACTION HANDLERS
+    // Helper positions & hit test
     function getMousePos(e) {
       const rect = workspace.getBoundingClientRect();
       return {
@@ -663,14 +673,23 @@
       };
     }
 
+    function getTouchPos(touch) {
+      const rect = workspace.getBoundingClientRect();
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+    }
+
     function isPointInInstrument(pos, inst) {
-      // Rough bounding box hit test with tolerance
       const dx = pos.x - inst.x;
       const dy = pos.y - inst.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      return dist < 80; // Simple radial hit detection for intuitive dragging
+      const radius = 80 * (inst.scale || 1);
+      return dist < radius;
     }
 
+    // MOUSE INTERACTION HANDLERS
     workspace.addEventListener('mousedown', (e) => {
       const pos = getMousePos(e);
 
@@ -680,7 +699,6 @@
         return;
       }
 
-      // Check instrument selection/drag
       let clickedInst = null;
       Object.keys(instruments).forEach(key => {
         const inst = instruments[key];
@@ -726,6 +744,128 @@
       isDrawingMarker = false;
       isDraggingInstrument = false;
       lastMarkerPos = null;
+    });
+
+    // TOUCH GESTURE HANDLERS (CIRCULAR ROTATION & 2-FINGER PINCH ZOOM)
+    function getTouchDistance(t1, t2) {
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    workspace.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        // Two-finger touch: Initialize zoom / pinch gesture
+        if (activeInstrument) {
+          initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+          initialInstrumentScale = activeInstrument.scale || 1;
+        }
+        isDraggingInstrument = false;
+        isDrawingMarker = false;
+        lastSingleTouchAngle = null;
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const pos = getTouchPos(touch);
+
+        if (currentTool === 'marker') {
+          isDrawingMarker = true;
+          lastMarkerPos = pos;
+          return;
+        }
+
+        let clickedInst = null;
+        Object.keys(instruments).forEach(key => {
+          const inst = instruments[key];
+          if (inst.visible && isPointInInstrument(pos, inst)) {
+            clickedInst = inst;
+          }
+        });
+
+        if (clickedInst) {
+          setActiveInstrument(clickedInst);
+          isDraggingInstrument = true;
+          dragOffset = { x: pos.x - clickedInst.x, y: pos.y - clickedInst.y };
+          
+          // Store initial angle for single-finger circular rotation gesture
+          const dx = pos.x - clickedInst.x;
+          const dy = pos.y - clickedInst.y;
+          lastSingleTouchAngle = Math.atan2(dy, dx);
+        } else {
+          setActiveInstrument(null);
+          lastSingleTouchAngle = null;
+        }
+      }
+    }, { passive: false });
+
+    workspace.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // Prevent page scrolling during gestures
+
+      if (e.touches.length === 2 && activeInstrument) {
+        // Two fingers: Handle Zoom (Scale)
+        const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        if (initialPinchDistance && initialPinchDistance > 0) {
+          const scaleFactor = currentDistance / initialPinchDistance;
+          let newScale = initialInstrumentScale * scaleFactor;
+          // Clamp scale between 0.4 and 3.0 for usable display
+          newScale = Math.min(Math.max(newScale, 0.4), 3.0);
+          activeInstrument.scale = newScale;
+          renderTools();
+        }
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const pos = getTouchPos(touch);
+
+        if (isDrawingMarker && lastMarkerPos) {
+          drawCtx.save();
+          drawCtx.strokeStyle = '#dc2626';
+          drawCtx.lineWidth = 2.5;
+          drawCtx.lineCap = 'round';
+          drawCtx.beginPath();
+          drawCtx.moveTo(lastMarkerPos.x, lastMarkerPos.y);
+          drawCtx.lineTo(pos.x, pos.y);
+          drawCtx.stroke();
+          drawCtx.restore();
+          lastMarkerPos = pos;
+          return;
+        }
+
+        if (isDraggingInstrument && activeInstrument) {
+          // Check circular motion distance relative to instrument center
+          const dx = pos.x - activeInstrument.x;
+          const dy = pos.y - activeInstrument.y;
+          const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+
+          // If finger moves in an outer orbit around instrument center, rotate it
+          if (distFromCenter > 25 && lastSingleTouchAngle !== null) {
+            const currentAngle = Math.atan2(dy, dx);
+            let angleDiff = (currentAngle - lastSingleTouchAngle) * (180 / Math.PI);
+
+            // Handle wrap-around transitions [-PI, PI]
+            if (angleDiff > 180) angleDiff -= 360;
+            if (angleDiff < -180) angleDiff += 360;
+
+            updateActiveRotation(activeInstrument.rotation + angleDiff);
+            lastSingleTouchAngle = currentAngle;
+          }
+
+          // Move instrument center
+          activeInstrument.x = pos.x - dragOffset.x;
+          activeInstrument.y = pos.y - dragOffset.y;
+          renderTools();
+        }
+      }
+    }, { passive: false });
+
+    workspace.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        initialPinchDistance = null;
+      }
+      if (e.touches.length === 0) {
+        isDrawingMarker = false;
+        isDraggingInstrument = false;
+        lastMarkerPos = null;
+        lastSingleTouchAngle = null;
+      }
     });
 
     // Initial setup setup default baseline segment
