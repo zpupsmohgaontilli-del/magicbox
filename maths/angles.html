@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geometry Angle Construction Workbench</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --panel-bg: #ffffff;
+      --accent-color: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border-color: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --marker-color: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      z-index: 10;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .btn.active {
+      background: #eff6ff;
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .btn-danger {
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #fef2f2;
+      border-color: #fca5a5;
+    }
+
+    .divider-v {
+      width: 1px;
+      height: 24px;
+      background: var(--border-color);
+      margin: 0 4px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .control-group input[type="range"] {
+      width: 100px;
+    }
+
+    .main-container {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #workspace {
+      flex: 1;
+      position: relative;
+      background-image: 
+        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+        linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-color: #f8fafc;
+      cursor: crosshair;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #drawingCanvas {
+      z-index: 1;
+    }
+
+    #toolsCanvas {
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .status-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(4px);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      z-index: 5;
+      pointer-events: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .tool-controls {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: var(--panel-bg);
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .tool-controls label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Geometry Construction Workbench</h1>
+    <div class="toolbar">
+      <button class="btn active" id="tool-select" onclick="setTool('select')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg> Move/Select
+      </button>
+      <button class="btn" id="tool-marker" onclick="setTool('marker')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg> Red Marker
+      </button>
+      
+      <div class="divider-v"></div>
+
+      <button class="btn" id="toggle-ruler" onclick="toggleInstrument('ruler')">Ruler (15cm)</button>
+      <button class="btn" id="toggle-protractor" onclick="toggleInstrument('protractor')">Protractor</button>
+      <button class="btn" id="toggle-setsquare45" onclick="toggleInstrument('setsquare45')">Set Square (45°)</button>
+      <button class="btn" id="toggle-setsquare60" onclick="toggleInstrument('setsquare60')">Set Square (30°/60°)</button>
+      <button class="btn" id="toggle-compass" onclick="toggleInstrument('compass')">Compass</button>
+      <button class="btn" id="toggle-divider" onclick="toggleInstrument('divider')">Divider</button>
+
+      <div class="divider-v"></div>
+
+      <button class="btn btn-danger" onclick="clearCanvas()">Clear All</button>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div id="workspace">
+      <canvas id="drawingCanvas"></canvas>
+      <canvas id="toolsCanvas"></canvas>
+      
+      <div class="status-bar" id="status">Active Tool: Select / Drag Instruments</div>
+
+      <div class="tool-controls" id="instrument-controls" style="display: none;">
+        <span id="active-instrument-name" style="font-weight: 600; font-size: 0.85rem;">Instrument</span>
+        <div class="control-group">
+          <label>Rotate:</label>
+          <input type="range" id="rotate-slider" min="0" max="360" value="0" oninput="updateActiveRotation(this.value)">
+          <span id="rotate-val">0°</span>
+        </div>
+        <div class="control-group" id="radius-control" style="display: none;">
+          <label>Radius/Span:</label>
+          <input type="range" id="radius-slider" min="20" max="300" value="100" oninput="updateActiveRadius(this.value)">
+          <span id="radius-val">100px</span>
+        </div>
+        <button class="btn" id="compass-draw-btn" style="display: none;" onclick="drawCompassArc()">Sweep Arc</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // System Constants
+    const PIXELS_PER_CM = 37.7952755906; // Standard 96 DPI pixel conversion
+
+    // Canvas Elements
+    const workspace = document.getElementById('workspace');
+    const drawCanvas = document.getElementById('drawingCanvas');
+    const toolsCanvas = document.getElementById('toolsCanvas');
+    const drawCtx = drawCanvas.getContext('2d');
+    const toolsCtx = toolsCanvas.getContext('2d');
+
+    // UI Controls
+    const statusEl = document.getElementById('status');
+    const instControls = document.getElementById('instrument-controls');
+    const instNameEl = document.getElementById('active-instrument-name');
+    const rotateSlider = document.getElementById('rotate-slider');
+    const rotateVal = document.getElementById('rotate-val');
+    const radiusControl = document.getElementById('radius-control');
+    const radiusSlider = document.getElementById('radius-slider');
+    const radiusVal = document.getElementById('radius-val');
+    const compassDrawBtn = document.getElementById('compass-draw-btn');
+
+    // State Variables
+    let currentTool = 'select'; // 'select', 'marker'
+    let isDrawingMarker = false;
+    let lastMarkerPos = null;
+
+    // Instruments Definitions
+    let activeInstrument = null;
+    let isDraggingInstrument = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    const instruments = {
+      ruler: { visible: false, x: 100, y: 150, rotation: 0, width: 15 * PIXELS_PER_CM, height: 50, type: 'ruler' },
+      protractor: { visible: false, x: 250, y: 300, rotation: 0, radius: 140, type: 'protractor' },
+      setsquare45: { visible: false, x: 400, y: 200, rotation: 0, size: 200, type: 'setsquare45' },
+      setsquare60: { visible: false, x: 550, y: 200, rotation: 0, width: 160, height: 277, type: 'setsquare60' },
+      compass: { visible: false, x: 300, y: 250, rotation: 0, span: 100, type: 'compass' },
+      divider: { visible: false, x: 450, y: 250, rotation: 0, span: 80, type: 'divider' }
+    };
+
+    // Canvas Initialization
+    function resizeCanvas() {
+      const width = workspace.clientWidth;
+      const height = workspace.clientHeight;
+      
+      // Retain drawn canvas contents on resize
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = drawCanvas.width;
+      tempCanvas.height = drawCanvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(drawCanvas, 0, 0);
+
+      drawCanvas.width = width;
+      drawCanvas.height = height;
+      toolsCanvas.width = width;
+      toolsCanvas.height = height;
+
+      drawCtx.drawImage(tempCanvas, 0, 0);
+      renderTools();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // Instrument Toggle Logic
+    function toggleInstrument(type) {
+      instruments[type].visible = !instruments[type].visible;
+      const btn = document.getElementById(`toggle-${type}`);
+      if (instruments[type].visible) {
+        btn.classList.add('active');
+        setActiveInstrument(instruments[type]);
+      } else {
+        btn.classList.remove('active');
+        if (activeInstrument === instruments[type]) {
+          setActiveInstrument(null);
+        }
+      }
+      renderTools();
+    }
+
+    function setActiveInstrument(inst) {
+      activeInstrument = inst;
+      if (!inst) {
+        instControls.style.display = 'none';
+        renderTools();
+        return;
+      }
+
+      instControls.style.display = 'flex';
+      instNameEl.textContent = getInstrumentName(inst.type);
+      rotateSlider.value = inst.rotation;
+      rotateVal.textContent = `${Math.round(inst.rotation)}°`;
+
+      if (inst.type === 'compass' || inst.type === 'divider') {
+        radiusControl.style.display = 'flex';
+        radiusSlider.value = inst.span;
+        radiusVal.textContent = `${Math.round(inst.span)}px`;
+        compassDrawBtn.style.display = inst.type === 'compass' ? 'inline-block' : 'none';
+      } else {
+        radiusControl.style.display = 'none';
+        compassDrawBtn.style.display = 'none';
+      }
+      renderTools();
+    }
+
+    function getInstrumentName(type) {
+      switch(type) {
+        case 'ruler': return 'Ruler (15cm)';
+        case 'protractor': return 'Protractor';
+        case 'setsquare45': return 'Set Square (45°)';
+        case 'setsquare60': return 'Set Square (30°/60°)';
+        case 'compass': return 'Compass';
+        case 'divider': return 'Divider';
+        default: return 'Instrument';
+      }
+    }
+
+    function updateActiveRotation(deg) {
+      if (activeInstrument) {
+        activeInstrument.rotation = parseFloat(deg);
+        rotateVal.textContent = `${Math.round(deg)}°`;
+        renderTools();
+      }
+    }
+
+    function updateActiveRadius(val) {
+      if (activeInstrument) {
+        activeInstrument.span = parseFloat(val);
+        radiusVal.textContent = `${Math.round(val)}px`;
+        renderTools();
+      }
+    }
+
+    // Active Tool Controls
+    function setTool(tool) {
+      currentTool = tool;
+      document.getElementById('tool-select').classList.toggle('active', tool === 'select');
+      document.getElementById('tool-marker').classList.toggle('active', tool === 'marker');
+      
+      statusEl.textContent = tool === 'marker' 
+        ? 'Active Tool: Red Marker (Click & drag to draw freehand lines/marks)' 
+        : 'Active Tool: Select / Drag Instruments';
+    }
+
+    function clearCanvas() {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    }
+
+    // Render Instruments Overlay
+    function renderTools() {
+      toolsCtx.clearRect(0, 0, toolsCanvas.width, toolsCanvas.height);
+
+      Object.keys(instruments).forEach(key => {
+        const inst = instruments[key];
+        if (!inst.visible) return;
+
+        toolsCtx.save();
+        toolsCtx.translate(inst.x, inst.y);
+        toolsCtx.rotate((inst.rotation * Math.PI) / 180);
+
+        // Highlight Active Instrument
+        if (activeInstrument === inst) {
+          toolsCtx.shadowColor = 'rgba(37, 99, 235, 0.4)';
+          toolsCtx.shadowBlur = 12;
+        }
+
+        switch (inst.type) {
+          case 'ruler': drawRuler(toolsCtx, inst); break;
+          case 'protractor': drawProtractor(toolsCtx, inst); break;
+          case 'setsquare45': drawSetSquare45(toolsCtx, inst); break;
+          case 'setsquare60': drawSetSquare60(toolsCtx, inst); break;
+          case 'compass': drawCompass(toolsCtx, inst); break;
+          case 'divider': drawDivider(toolsCtx, inst); break;
+        }
+
+        toolsCtx.restore();
+      });
+    }
+
+    // DRAWING INSTRUMENT GRAPHICS
+    function drawRuler(ctx, inst) {
+      const w = inst.width;
+      const h = inst.height;
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeRect(0, 0, w, h);
+
+      // Marks
+      ctx.fillStyle = '#334155';
+      ctx.strokeStyle = '#334155';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+
+      for (let cm = 0; cm <= 15; cm++) {
+        const x = cm * PIXELS_PER_CM;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, 15);
+        ctx.stroke();
+        ctx.fillText(cm, x, 26);
+
+        if (cm < 15) {
+          for (let mm = 1; mm < 10; mm++) {
+            const mx = x + (mm * PIXELS_PER_CM) / 10;
+            const length = mm === 5 ? 10 : 6;
+            ctx.beginPath();
+            ctx.moveTo(mx, 0);
+            ctx.lineTo(mx, length);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function drawProtractor(ctx, inst) {
+      const r = inst.radius;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, r, Math.PI, 0, false);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+      ctx.fill();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Inner cutout
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.4, Math.PI, 0, false);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.5)';
+      ctx.fill();
+      ctx.stroke();
+
+      // Center crosshair
+      ctx.beginPath();
+      ctx.moveTo(-10, 0); ctx.lineTo(10, 0);
+      ctx.moveTo(0, -10); ctx.lineTo(0, 10);
+      ctx.strokeStyle = '#ef4444';
+      ctx.stroke();
+
+      // Ticks & Degree Labels
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#334155';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let deg = 0; deg <= 180; deg++) {
+        const rad = (180 - deg) * (Math.PI / 180);
+        const isMajor = deg % 10 === 0;
+        const isMedium = deg % 5 === 0;
+        const tickLen = isMajor ? 12 : isMedium ? 8 : 4;
+
+        const x1 = Math.cos(rad) * r;
+        const y1 = -Math.sin(rad) * r;
+        const x2 = Math.cos(rad) * (r - tickLen);
+        const y2 = -Math.sin(rad) * (r - tickLen);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        if (isMajor) {
+          // Outer scale (0-180)
+          const tx = Math.cos(rad) * (r - 20);
+          const ty = -Math.sin(rad) * (r - 20);
+          ctx.fillText(deg, tx, ty);
+
+          // Inner scale (180-0)
+          const tx2 = Math.cos(rad) * (r - 32);
+          const ty2 = -Math.sin(rad) * (r - 32);
+          ctx.fillText(180 - deg, tx2, ty2);
+        }
+      }
+    }
+
+    function drawSetSquare45(ctx, inst) {
+      const s = inst.size;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(s, 0);
+      ctx.lineTo(0, s);
+      ctx.closePath();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fill();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Inner Cutout Triangle
+      ctx.beginPath();
+      ctx.moveTo(s * 0.2, s * 0.2);
+      ctx.lineTo(s * 0.6, s * 0.2);
+      ctx.lineTo(s * 0.2, s * 0.6);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    function drawSetSquare60(ctx, inst) {
+      const w = inst.width;
+      const h = inst.height;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fill();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Inner Cutout Triangle
+      ctx.beginPath();
+      ctx.moveTo(w * 0.2, h * 0.4);
+      ctx.lineTo(w * 0.6, h * 0.8);
+      ctx.lineTo(w * 0.2, h * 0.8);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    function drawCompass(ctx, inst) {
+      const span = inst.span;
+
+      // Hinge / Head
+      ctx.beginPath();
+      ctx.arc(0, -40, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#64748b';
+      ctx.fill();
+
+      // Needle Leg (Fixed Left)
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, -40);
+      ctx.lineTo(-span / 2, 0);
+      ctx.stroke();
+
+      // Pencil Leg (Adjustable Right)
+      ctx.strokeStyle = '#2563eb';
+      ctx.beginPath();
+      ctx.moveTo(0, -40);
+      ctx.lineTo(span / 2, 0);
+      ctx.stroke();
+
+      // Steel Tip
+      ctx.beginPath();
+      ctx.arc(-span / 2, 0, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#000';
+      ctx.fill();
+
+      // Pencil Tip
+      ctx.beginPath();
+      ctx.arc(span / 2, 0, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#dc2626';
+      ctx.fill();
+    }
+
+    function drawDivider(ctx, inst) {
+      const span = inst.span;
+
+      // Hinge
+      ctx.beginPath();
+      ctx.arc(0, -40, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#64748b';
+      ctx.fill();
+
+      // Left Leg
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, -40);
+      ctx.lineTo(-span / 2, 0);
+      ctx.stroke();
+
+      // Right Leg
+      ctx.beginPath();
+      ctx.moveTo(0, -40);
+      ctx.lineTo(span / 2, 0);
+      ctx.stroke();
+
+      // Steel Tips
+      ctx.fillStyle = '#000';
+      ctx.beginPath(); ctx.arc(-span / 2, 0, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(span / 2, 0, 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Compass Drawing Sweep
+    function drawCompassArc() {
+      if (!instruments.compass.visible) return;
+
+      const comp = instruments.compass;
+      const rad = (comp.rotation * Math.PI) / 180;
+      
+      // Calculate Needle Center Position in global coordinates
+      const needleLocalX = -comp.span / 2;
+      const needleLocalY = 0;
+      
+      const needleGlobalX = comp.x + needleLocalX * Math.cos(rad) - needleLocalY * Math.sin(rad);
+      const needleGlobalY = comp.y + needleLocalX * Math.sin(rad) + needleLocalY * Math.cos(rad);
+
+      // Draw Arc around needle point
+      drawCtx.save();
+      drawCtx.strokeStyle = '#2563eb';
+      drawCtx.lineWidth = 1.5;
+      drawCtx.beginPath();
+      drawCtx.arc(needleGlobalX, needleGlobalY, comp.span, rad - 0.5, rad + 0.5);
+      drawCtx.stroke();
+      drawCtx.restore();
+    }
+
+    // MOUSE & DRAG INTERACTION HANDLERS
+    function getMousePos(e) {
+      const rect = workspace.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function isPointInInstrument(pos, inst) {
+      // Rough bounding box hit test with tolerance
+      const dx = pos.x - inst.x;
+      const dy = pos.y - inst.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      return dist < 80; // Simple radial hit detection for intuitive dragging
+    }
+
+    workspace.addEventListener('mousedown', (e) => {
+      const pos = getMousePos(e);
+
+      if (currentTool === 'marker') {
+        isDrawingMarker = true;
+        lastMarkerPos = pos;
+        return;
+      }
+
+      // Check instrument selection/drag
+      let clickedInst = null;
+      Object.keys(instruments).forEach(key => {
+        const inst = instruments[key];
+        if (inst.visible && isPointInInstrument(pos, inst)) {
+          clickedInst = inst;
+        }
+      });
+
+      if (clickedInst) {
+        setActiveInstrument(clickedInst);
+        isDraggingInstrument = true;
+        dragOffset = { x: pos.x - clickedInst.x, y: pos.y - clickedInst.y };
+      } else {
+        setActiveInstrument(null);
+      }
+    });
+
+    workspace.addEventListener('mousemove', (e) => {
+      const pos = getMousePos(e);
+
+      if (isDrawingMarker && lastMarkerPos) {
+        drawCtx.save();
+        drawCtx.strokeStyle = '#dc2626';
+        drawCtx.lineWidth = 2.5;
+        drawCtx.lineCap = 'round';
+        drawCtx.beginPath();
+        drawCtx.moveTo(lastMarkerPos.x, lastMarkerPos.y);
+        drawCtx.lineTo(pos.x, pos.y);
+        drawCtx.stroke();
+        drawCtx.restore();
+        lastMarkerPos = pos;
+        return;
+      }
+
+      if (isDraggingInstrument && activeInstrument) {
+        activeInstrument.x = pos.x - dragOffset.x;
+        activeInstrument.y = pos.y - dragOffset.y;
+        renderTools();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDrawingMarker = false;
+      isDraggingInstrument = false;
+      lastMarkerPos = null;
+    });
+
+    // Initial setup setup default baseline segment
+    function initDefaults() {
+      resizeCanvas();
+      
+      // Draw initial reference line AB
+      drawCtx.strokeStyle = '#475569';
+      drawCtx.lineWidth = 2;
+      drawCtx.beginPath();
+      drawCtx.moveTo(150, 400);
+      drawCtx.lineTo(450, 400);
+      drawCtx.stroke();
+
+      // Points A and B
+      drawCtx.fillStyle = '#0f172a';
+      drawCtx.font = '12px sans-serif';
+      
+      drawCtx.beginPath(); drawCtx.arc(150, 400, 3, 0, Math.PI*2); drawCtx.fill();
+      drawCtx.fillText('A', 145, 420);
+
+      drawCtx.beginPath(); drawCtx.arc(450, 400, 3, 0, Math.PI*2); drawCtx.fill();
+      drawCtx.fillText('B', 450, 420);
+
+      // Deploy Protractor and Ruler by default
+      toggleInstrument('ruler');
+      toggleInstrument('protractor');
+    }
+
+    window.onload = initDefaults;
+  </script>
+</body>
+</html>
