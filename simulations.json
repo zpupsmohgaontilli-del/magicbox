@@ -8,12 +8,20 @@
     "url": "maths/fractions.html"
   },
   {
-    "id": "mathstamp",
+    "id": "Mathstamp",
     "category": "maths",
-    "title": "mathstamp",
+    "title": "Mathstamp",
     "desc": "गणिताच्या मुलभूत क्रिया समजून घेण्यासाठी परस्परसंवादी साधन.",
     "icon": "fa-solid fa-calculator",
     "url": "maths/mathstamp.html"
+  },
+   {
+    "id": "Angles",
+    "category": "maths",
+    "title": "Angles",
+    "desc": "कोन रचना, कोन मापन.",
+    "icon": "fa-solid fa-angle",
+    "url": "maths/angle.html"
   },
   {
     "id": "light-reflection",
